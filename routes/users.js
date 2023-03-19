@@ -28,6 +28,7 @@ router.post("/register", async (req, res) => {
   }
 });
 
+//Get a single user
 router.get("/:id", async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
@@ -69,6 +70,16 @@ router.put("/:id", async (req, res) => {
     }
   } else {
     res.status(400).json({ message: "userId does not match" });
+  }
+});
+
+//Get All Users
+router.get("/", async (req, res) => {
+  try {
+    const user = await User.find({});
+    res.status(200).json(user);
+  } catch (err) {
+    res.status(500).json(err);
   }
 });
 
