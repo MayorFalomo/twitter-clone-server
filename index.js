@@ -6,7 +6,7 @@ const cors = require("cors");
 const userRoutes = require("./routes/users");
 const postRoutes = require("./routes/posts");
 
-dotEnv.config();
+dotEnv.config({ path: "./vars/.env" });
 app.use(express.json());
 app.use(cors());
 
