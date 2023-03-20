@@ -2,6 +2,10 @@ const mongoose = require("mongoose");
 
 const TweetSchema = new mongoose.Schema(
   {
+    username: {
+      type: String,
+      required: true,
+    },
     tweet: {
       type: String,
       required: false,
@@ -31,7 +35,7 @@ const TweetSchema = new mongoose.Schema(
       required: false,
     },
     bookmarks: {
-      type: "String",
+      type: "Array",
       required: false,
     },
   },

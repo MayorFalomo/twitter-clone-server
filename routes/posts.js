@@ -169,7 +169,7 @@ router.get("/:id", async (req, res) => {
 // })
 
 //Get all the post of a single user
-router.get(`/get-post/:username`, async (req, res) => {
+router.get(`/get-tweet/:username`, async (req, res) => {
   const username = req.params.username;
   let posts;
   try {
