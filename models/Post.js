@@ -5,10 +5,15 @@ const TweetSchema = new mongoose.Schema(
     username: {
       type: String,
       required: true,
+      unique: true,
     },
     tweet: {
       type: String,
       required: false,
+    },
+    profileDp: {
+      type: String,
+      required: true,
     },
     picture: {
       type: String,
@@ -16,6 +21,10 @@ const TweetSchema = new mongoose.Schema(
     },
     video: {
       type: String,
+      required: false,
+    },
+    gif: {
+    type: String,
       required: false,
     },
     likes: {
