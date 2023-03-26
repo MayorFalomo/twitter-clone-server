@@ -13,6 +13,7 @@ router.post("/register", async (req, res) => {
       email: req.body.email,
       password: req.body.password,
       profilePic: req.body.profilePic,
+      coverPhoto: req.body.coverPhoto,
       bio: req.body.bio,
       usersAt: req.body.usersAt,
       following: req.body.following,

@@ -5,7 +5,7 @@ const TweetSchema = new mongoose.Schema(
     username: {
       type: String,
       required: true,
-      unique: true,
+      unique: false,
     },
     tweet: {
       type: String,
@@ -40,11 +40,11 @@ const TweetSchema = new mongoose.Schema(
       required: false,
     },
     usersAt: {
-      type: "String",
+      type: String,
       required: false,
     },
     bookmarks: {
-      type: "Array",
+      type: Array,
       required: false,
     },
   },
