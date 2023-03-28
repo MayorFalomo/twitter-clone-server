@@ -2,6 +2,10 @@ const mongoose = require("mongoose");
 
 const TweetSchema = new mongoose.Schema(
   {
+    // _id: {
+    //   type: String,
+    //   required: true,
+    // },
     username: {
       type: String,
       required: true,
@@ -47,6 +51,11 @@ const TweetSchema = new mongoose.Schema(
       type: Array,
       required: false,
     },
+    // time: {
+    //   type: Date,
+    //   required: true,
+    //   default: Date.now()
+    // },
   },
   { timestamps: true }
 );
