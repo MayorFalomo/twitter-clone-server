@@ -48,6 +48,21 @@ const UserSchema = new mongoose.Schema(
       type: [],
       require: false,
     },
+    location: {
+      type: String,
+      required: true,
+      default: "Lagos, Nigeria"
+    },
+    birthday: {
+      type: String,
+      required: false,
+      default: "April, 19th, 1999"
+    },
+    links: {
+      type: String,
+      required: false,
+      default: "https://mayowa-falomo.netlify.app"
+    }
   },
   { timestamps: true }
 );
