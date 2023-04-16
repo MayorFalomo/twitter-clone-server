@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { db } = require("./Users");
 
 const TweetSchema = new mongoose.Schema(
   {
@@ -38,6 +39,18 @@ const TweetSchema = new mongoose.Schema(
     comments: {
       type: Array,
       required: false,
+      likes: {
+        type: Array,
+        required: false,
+      },
+      retweet: {
+        type: Array,
+        required: false,
+      },
+      comments: {
+        type: Array,
+        required: false,
+      }
     },
     retweet: {
       type: Array,
@@ -59,5 +72,6 @@ const TweetSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
 
 module.exports = mongoose.model("Post", TweetSchema);

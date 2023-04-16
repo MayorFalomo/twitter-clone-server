@@ -67,4 +67,14 @@ const UserSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// UserSchema.pre(["updateOne", "findOneAndUpdate", "findByIdAndUpdate", "updateMany" ], async function (next) {
+//     if(this.get("username")){
+//          let userDoc = await mongoose.model("user").findOne(this._conditions);
+//          await mongoose.model("post").updateOne({ username: userDoc.username },{
+//          username: this.get("username")
+//          });
+//     }
+//     next();
+//   })
+
 module.exports = mongoose.model("User", UserSchema);

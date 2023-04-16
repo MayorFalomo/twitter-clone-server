@@ -84,4 +84,64 @@ router.get("/", async (req, res) => {
   }
 });
 
+//Follow a user
+router.put('/follow-user', async (req, res) => {
+  const userToBeFollowed = req.body.userToAddToUserId;
+  const currentUser = req.body.userId;
+
+  let userToAddTo;
+  let existingUser;
+
+  const currentUserDetails = {
+    username: req.body.currentUserName,
+    profilePic: req.body.currentUserProfilePic,
+    userId: req.body.userId,
+  }
+
+  const userToAddToDetails = {
+    username: req.body.userToAddToName,
+    profilePic: req.body.userToAddToProfilePic,
+    userId: req.body.userId,
+  }
+
+  try {
+    userToAddTo = User.findByIdAndUpdate(userToBeFollowed, {
+      $push: {followers: currentUserDetails},
+    })
+
+    existingUser = await User.findByIdAndUpdate(currentUser, {
+      $push: {following: userToAddToDetails}
+    })
+  } catch (err) { console.log(err) }
+  
+  if (!userToAddTo && !existingUser) {
+    return res.status(500).json({message: "Unable to Follow this user"})
+  }
+  return res.status(200).json({message: "Successfully Followed"})
+  
+})
+
+//UnFolllow a User
+router.put('/unfollow-user', async (req, res) => { 
+  const userToBeUnfollowed = req.body.userToBeUnfollowed;
+  const currentUser = req.body.currentUser;
+
+  let userToRemoveFrom;
+  let existingUser;
+
+  try {
+    userToRemoveFrom = await User.findByIdAndUpdate(userToBeUnfollowed, {
+      $pull: {following: {userToAddToUserId: userToBeUnfollowed}},
+    })
+  } catch (error) {
+    return res.status(500).json({message: error})
+  }
+
+  if (!userToRemoveFrom && !existingUser) {
+    return res.status(500).json({message: "Unable to Follow"})
+  }
+
+  return res.status(200).json({message: "Successfully Unfollowed this user"})
+})
+
 module.exports = router;
