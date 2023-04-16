@@ -20,8 +20,9 @@ router.put("/liketweet", async (req, res) => {
 
   const userDetails = {
     username: req.body.username,
-    photo: req.body.photo,
-    userAt: req.body.userAt,
+    profileDp: req.body.profileDp,
+    usersAt: req.body.usersAt,
+    postId: req.body.postId,
   };
   //Find id in Post and update, then push the userDetails into the likes array
   //What do we need? we get the _id
@@ -43,8 +44,9 @@ router.put("/unlike-tweet", async (req, res) => {
   let like;
   const userDetails = {
     username: req.body.username,
-    photo: req.body.photo,
-    userAt: req.body.userAt,
+    profileDp: req.body.profileDp,
+    usersAt: req.body.usersAt,
+    postId: req.body.postId,
   };
   try {
     like = await Post.findByIdAndUpdate(
@@ -59,10 +61,10 @@ router.put("/unlike-tweet", async (req, res) => {
     console.log(err);
   }
   if (!like) {
-    return res.status(500).json({ message: "Unable To Dislike" });
+    return res.status(500).json({ message: "Unable To Dislike tweet" });
   }
 
-  return res.status(200).json({ message: "Successfully Disliked fr" });
+  return res.status(200).json({ message: "Successfully Disliked tweet" });
 });
 
 //Comment On A Post
@@ -73,8 +75,13 @@ router.put("/comments", async (req, res) => {
 
   const userDetails = {
     username: req.body.username,
-    photo: req.body.photo,
+    photo: req.body.profileDp,
     comments: req.body.comments,
+    usersAt: req.body.usersAt,
+    picture: req.body.picture,
+    video: req.body.video,
+    postId: req.body.postId,
+    createdAt: req.body.createdAt,
   };
 
   try {

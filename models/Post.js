@@ -39,7 +39,7 @@ const TweetSchema = new mongoose.Schema(
     comments: {
       type: Array,
       required: false,
-      likes: {
+      like: {
         type: Array,
         required: false,
       },
