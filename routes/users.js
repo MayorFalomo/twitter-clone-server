@@ -29,12 +29,23 @@ router.post("/register", async (req, res) => {
   }
 });
 
-//Get a single user
+// Get a single user
 router.get("/:id", async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
-    // const { password, ...others } = user._doc;
+     const { password, ...others } = user._doc;
     res.status(200).json(user);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+router.get(`/get-user/:username`, async (req, res) => {
+  const username = req.params.username;
+  try {
+    const user = await User.find({ username });
+    res.status(200).json(user);
+    console.log(user);
   } catch (err) {
     res.status(500).json(err);
   }
@@ -131,7 +142,12 @@ router.put('/unfollow-user', async (req, res) => {
 
   try {
     userToRemoveFrom = await User.findByIdAndUpdate(userToBeUnfollowed, {
-      $pull: {following: {userToAddToUserId: userToBeUnfollowed}},
+      $pull: {followers: {userId: currentUser}},
+    })
+    existingUser = await User.findByIdAndUpdate(currentUser, {
+      $pull: {
+        following: { userToAddToUserId: userToBeUnfollowed }
+      },
     })
   } catch (error) {
     return res.status(500).json({message: error})
@@ -140,8 +156,8 @@ router.put('/unfollow-user', async (req, res) => {
   if (!userToRemoveFrom && !existingUser) {
     return res.status(500).json({message: "Unable to Follow"})
   }
-
   return res.status(200).json({message: "Successfully Unfollowed this user"})
 })
+
 
 module.exports = router;

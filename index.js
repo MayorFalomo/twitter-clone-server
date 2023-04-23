@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const userRoutes = require("./routes/users");
 const postRoutes = require("./routes/posts");
+const bookmarkRoutes = require("./routes/bookmarks");
 
 dotEnv.config({ path: "./vars/.env" });
 app.use(express.json());
@@ -22,6 +23,7 @@ mongoose
 
 app.use("/api/users", userRoutes);
 app.use("/api/tweets", postRoutes);
+app.use("/api/bookmarks", bookmarkRoutes);
 
 app.listen("7000", () => {
   console.log("Server is running on port 7000");
