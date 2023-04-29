@@ -56,6 +56,10 @@ const TweetSchema = new mongoose.Schema(
       type: Array,
       required: false,
     },
+    quoted: {
+      type: Array,
+      required: false,
+    },
     usersAt: {
       type: String,
       required: false,

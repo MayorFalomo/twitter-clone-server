@@ -29,6 +29,24 @@ router.post("/register", async (req, res) => {
   }
 });
 
+router.get('/login/', async (req, res) => {
+  const userId = req.params._id;
+  
+  let user;
+
+  try {
+    user = await User.findById(userId, "_id");
+  } catch (error) {
+    return res.status(404).json({ message: "Something went wrong." });
+  }
+
+  if (!user) {
+    return res.status(404).json({ message: "User Not Found" });
+  }
+
+  return res.status(200).json({ user });
+});
+
 // Get a single user
 router.get("/:id", async (req, res) => {
   try {
@@ -67,6 +85,74 @@ router.get(`/get-user/:username`, async (req, res) => {
 //   return res.status(200).json({ user });
 // });
 
+//Follow a user
+router.put('/follow-user', async (req, res) => {
+  const userToBeFollowed = req.body.usersId;
+  const currentUser = req.body.currentUserId;
+
+  let userToAddTo;
+  let existingUser;
+
+  const currentUserDetails = {
+    username: req.body.currentUserName,
+    usersAt: req.body.currentUsersAt,
+    profileDp: req.body.currentProfileDp,
+    userId: req.body.currentUserId,
+  }
+
+  const userToAddToDetails = {
+    name: req.body.userToAddToName,
+    userAt: req.body.userToAddToAt, //This is a list of userIds. This is a list of usernames
+    profilePic: req.body.userToAddToProfilePic,
+    usersId: req.body.usersId,
+  }
+
+  try {
+    userToAddTo = await User.findByIdAndUpdate(userToBeFollowed, {
+    $push: {followers: currentUserDetails},
+    })
+
+    existingUser = await User.findByIdAndUpdate(currentUser, {
+    $push: {following: userToAddToDetails}
+    })
+  } catch (err) { console.log(err) }
+  
+  if (!userToAddTo && !existingUser) {
+    return res.status(500).json({message: "Unable to Follow this user"})
+  }
+  return res.status(200).json({message: "Successfully Followed"})
+})
+
+//UnFolllow a User
+router.put('/unfollow-user', async (req, res) => { 
+  const userToBeUnfollowed = req.body.userToBeUnfollowed;
+  const currentUser = req.body.currentUser;
+
+  let userToRemoveFrom;
+  let existingUser;
+
+  try {
+    //remove the current User from the person you followed
+    userToRemoveFrom = await User.findByIdAndUpdate(userToBeUnfollowed, {
+      $pull: {followers: {currentUserId: currentUser}},
+    })
+    //remove the user you followed from the existing user
+    existingUser = await User.findByIdAndUpdate(currentUser, {
+      $pull: {
+        following: { usersId: userToBeUnfollowed }
+      },
+    })
+  } catch (error) {
+    return res.status(500).json({message: error})
+  }
+
+  if (!userToRemoveFrom && !existingUser) {
+    return res.status(500).json({message: "Unable to Follow"})
+  }
+  return res.status(200).json({message: "Successfully Unfollowed this user"})
+})
+
+
 //Update user details
 router.put("/:id", async (req, res) => {
   if (req.body.userId == req.params.id) {
@@ -85,6 +171,23 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+// router.put("/:username", async (req, res) => {
+//   if (req.body.username == req.params.username) {
+//     try {
+//       const updatedUser = await User.find(
+//         req.params.username,
+//         { $set: req.body },
+//         { new: true } //When this line is added whatever you update shows immediately in postman
+//     );
+//       res.status(200).json(updatedUser);
+//     } catch (err) {
+//       res.status(500).json(err);
+//     }
+//   } else {
+//     res.status(400).json({ message: "userId does not match" });
+//   }
+// });
+
 //Get All Users
 router.get("/", async (req, res) => {
   try {
@@ -95,69 +198,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-//Follow a user
-router.put('/follow-user', async (req, res) => {
-  const userToBeFollowed = req.body.userToAddToUserId;
-  const currentUser = req.body.userId;
 
-  let userToAddTo;
-  let existingUser;
-
-  const currentUserDetails = {
-    username: req.body.currentUserName,
-    profilePic: req.body.currentUserProfilePic,
-    userId: req.body.userId,
-  }
-
-  const userToAddToDetails = {
-    username: req.body.userToAddToName,
-    profilePic: req.body.userToAddToProfilePic,
-    userId: req.body.userId,
-  }
-
-  try {
-    userToAddTo = User.findByIdAndUpdate(userToBeFollowed, {
-      $push: {followers: currentUserDetails},
-    })
-
-    existingUser = await User.findByIdAndUpdate(currentUser, {
-      $push: {following: userToAddToDetails}
-    })
-  } catch (err) { console.log(err) }
-  
-  if (!userToAddTo && !existingUser) {
-    return res.status(500).json({message: "Unable to Follow this user"})
-  }
-  return res.status(200).json({message: "Successfully Followed"})
-  
-})
-
-//UnFolllow a User
-router.put('/unfollow-user', async (req, res) => { 
-  const userToBeUnfollowed = req.body.userToBeUnfollowed;
-  const currentUser = req.body.currentUser;
-
-  let userToRemoveFrom;
-  let existingUser;
-
-  try {
-    userToRemoveFrom = await User.findByIdAndUpdate(userToBeUnfollowed, {
-      $pull: {followers: {userId: currentUser}},
-    })
-    existingUser = await User.findByIdAndUpdate(currentUser, {
-      $pull: {
-        following: { userToAddToUserId: userToBeUnfollowed }
-      },
-    })
-  } catch (error) {
-    return res.status(500).json({message: error})
-  }
-
-  if (!userToRemoveFrom && !existingUser) {
-    return res.status(500).json({message: "Unable to Follow"})
-  }
-  return res.status(200).json({message: "Successfully Unfollowed this user"})
-})
 
 
 module.exports = router;
