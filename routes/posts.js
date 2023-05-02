@@ -39,6 +39,30 @@ router.put("/liketweet", async (req, res) => {
   return res.status(200).json({ message: "You have liked this post" });
 });
 
+router.put("/retweet-tweet", async (req, res) => {
+  let post;
+
+  const userDetails = {
+    username: req.body.username,
+    profileDp: req.body.profileDp,
+    usersAt: req.body.usersAt,
+    postId: req.body.postId,
+  };
+  //Find id in Post and update, then push the userDetails into the likes array
+  //What do we need? we get the _id
+  try {
+    post = await Post.findByIdAndUpdate(req.body.postId, {
+    $push: { retweet: userDetails },
+    });
+  } catch (err) {
+    console.log(err);
+  }
+  if (!post) {
+    return res.status(404).json({ message: "You can't retweet this post" });
+  }
+  return res.status(200).json({ message: "You have retweeted this post" });
+});
+
 //Unlike a post
 router.put("/unlike-tweet", async (req, res) => {
   let like;
@@ -91,6 +115,42 @@ router.put("/comments", async (req, res) => {
       },
       {
         $push: { comments: userDetails },
+      }
+    );
+  } catch (err) {
+    console.log(err);
+  }
+  if (!post) {
+    return res.status(404).json({ message: "Can't Comment On This Post" });
+  }
+  console.log(post);
+  return res.status(200).json({ message: "Successfully Commented on a Post" });
+});
+
+//Quoted Replies
+router.put("/quote-tweet", async (req, res) => {
+  // const postId = req.body._id;
+  let post;
+  // console.log(req.body._id, "This is postID");
+
+  const userDetails = {
+    username: req.body.username,
+    photo: req.body.profileDp,
+    comments: req.body.comments,
+    usersAt: req.body.usersAt,
+    picture: req.body.picture,
+    video: req.body.video,
+    postId: req.body.postId,
+    createdAt: req.body.createdAt,
+  };
+
+  try {
+    post = await Post.findByIdAndUpdate(
+      {
+        _id: req.body.postId,
+      },
+      {
+        $push: { quoted: userDetails },
       }
     );
   } catch (err) {

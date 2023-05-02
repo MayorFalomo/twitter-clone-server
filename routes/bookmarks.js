@@ -16,6 +16,7 @@ router.post('/addBookmark', async (req, res, next) => {
             comments: req.body.comments,
             createdAt: req.body.createdAt,
             postId: req.body.postId,
+            userDetail: req.body.userDetail,
             saved: true,
         })
         await bookmark.save()
@@ -32,15 +33,14 @@ router.get('/get-bookmark/:id', async (req, res, next) => {
     const userId = req.params.id;
     let bookmark;
     try {
-        bookmark = await Bookmarks.findById(userId);
+        bookmark = await Bookmarks.find({ userDetail: userId });
     } catch (err) {
-       return res.status(404).json({message: "Unable to find Bookmark"})
+        return res.status(404).json({ message: "Unable to find Bookmark" })
     }
     if (!bookmark) {
-        return res.status(404).json({message: "Can't get this Bookmark"}) 
-    } else {
-        return res.status(200).json(bookmark)
+        return res.status(404).json({ message: "Can't get this Bookmark" })
     }
+    return res.status(200).json(bookmark)
 })
 
 router.delete('/delete-bookmark/:id', async (req, res, next) => {

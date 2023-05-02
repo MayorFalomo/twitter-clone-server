@@ -44,7 +44,13 @@ const BookmarkSchema = new mongoose.Schema({
     createdAt: {
         type: String,
         required: true,
-    }
+  },
+    userDetail: {
+    type: String,
+    // type: mongoose.Types.ObjectId,
+    // ref: "Users",
+    required: true,
+  },
 });
 
 module.exports = mongoose.model("bookmarks", BookmarkSchema);
