@@ -2,7 +2,7 @@ const router = require("express").Router();
 const Post = require("../models/Post");
 const User = require("../models/Users");
 
-//CREATE POST - Using the post method for creating/adding new Post
+//CREATE Tweet - Using the post method for creating/adding new Tweet
 router.post("/", async (req, res) => {
   const newPost = new Post(req.body);
   try {
@@ -14,7 +14,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-//Like a Post
+//Like a tweet
 router.put("/liketweet", async (req, res) => {
   let post;
 
@@ -39,31 +39,36 @@ router.put("/liketweet", async (req, res) => {
   return res.status(200).json({ message: "You have liked this post" });
 });
 
-router.put("/retweet-tweet", async (req, res) => {
-  let post;
+// //Like a tweet comment
+// router.put("/comment-liketweet", async (req, res) => {
+//   let post;
 
-  const userDetails = {
-    username: req.body.username,
-    profileDp: req.body.profileDp,
-    usersAt: req.body.usersAt,
-    postId: req.body.postId,
-  };
-  //Find id in Post and update, then push the userDetails into the likes array
-  //What do we need? we get the _id
-  try {
-    post = await Post.findByIdAndUpdate(req.body.postId, {
-    $push: { retweet: userDetails },
-    });
-  } catch (err) {
-    console.log(err);
-  }
-  if (!post) {
-    return res.status(404).json({ message: "You can't retweet this post" });
-  }
-  return res.status(200).json({ message: "You have retweeted this post" });
-});
+//   const userDetails = {
+//     username: req.body.username,
+//     profileDp: req.body.profileDp,
+//     usersAt: req.body.usersAt,
+//     postId: req.body.postId,
+//     createdAt: req.body.createdAt,
+//     likeId: req.body.likeId,
+//   };
+//   //Find id in Post and update, then push the userDetails into the likes array
+//   //What do we need? we get the _id
+//   try {
+//     post = await Post.findByIdAndUpdate(req.body.likeId, {
+//       "$push": { "comments.$[].like":  userDetails },
+//     });
+//   } catch (err) {
+//     console.log(err);
+//   }
+//   if (!post) {
+//     return res.status(404).json({ message: "You cannot like this comment" });
+//   }
+//   return res.status(200).json({ message: "You just liked this comment" });
+// });
 
-//Unlike a post
+
+
+//Unlike a Tweet
 router.put("/unlike-tweet", async (req, res) => {
   let like;
   const userDetails = {
@@ -91,7 +96,60 @@ router.put("/unlike-tweet", async (req, res) => {
   return res.status(200).json({ message: "Successfully Disliked tweet" });
 });
 
-//Comment On A Post
+//Retweet a tweet
+router.put("/retweet-tweet", async (req, res) => {
+  let post;
+
+  const userDetails = {
+    username: req.body.username,
+    profileDp: req.body.profileDp,
+    usersAt: req.body.usersAt,
+    postId: req.body.postId,
+  };
+  //Find id in Post and update, then push the userDetails into the likes array
+  //What do we need? we get the _id
+  try {
+    post = await Post.findByIdAndUpdate(req.body.postId, {
+    $push: { retweet: userDetails },
+    });
+  } catch (err) {
+    console.log(err);
+  }
+  if (!post) {
+    return res.status(404).json({ message: "You can't retweet this post" });
+  }
+  return res.status(200).json({ message: "You have retweeted this post" });
+});
+
+//UnRetweet a Tweet
+router.put("/un-retweet", async (req, res) => {
+  let like;
+  const userDetails = {
+    username: req.body.username,
+    profileDp: req.body.profileDp,
+    usersAt: req.body.usersAt,
+    postId: req.body.postId,
+  };
+  try {
+    like = await Post.findByIdAndUpdate(
+      {
+        _id: req.body.postId,
+      },
+      { $pull: { retweet: userDetails } },
+      { multi: true }
+    );
+  } catch (err) {
+    ("");
+    console.log(err);
+  }
+  if (!like) {
+    return res.status(500).json({ message: "Unable To Dislike tweet" });
+  }
+
+  return res.status(200).json({ message: "Successfully Disliked tweet" });
+});
+
+//Comment On A Tweet
 router.put("/comments", async (req, res) => {
   // const postId = req.body._id;
   let post;
@@ -106,6 +164,8 @@ router.put("/comments", async (req, res) => {
     video: req.body.video,
     postId: req.body.postId,
     createdAt: req.body.createdAt,
+    comment: req.body.comment,
+    newId: req.body.newId,
   };
 
   try {
@@ -114,7 +174,7 @@ router.put("/comments", async (req, res) => {
         _id: req.body.postId,
       },
       {
-        $push: { comments: userDetails },
+        $push: { comments:  userDetails },
       }
     );
   } catch (err) {
@@ -126,6 +186,42 @@ router.put("/comments", async (req, res) => {
   console.log(post);
   return res.status(200).json({ message: "Successfully Commented on a Post" });
 });
+
+// //Reply someone's comment
+// router.put("/replies-comments", async (req, res) => {
+//   // const postId = req.body._id;
+//   let post;
+//   // console.log(req.body._id, "This is postID");
+
+//   const userDetails = {
+//     username: req.body.username,
+//     photo: req.body.profileDp,
+//     comments: req.body.comments,
+//     usersAt: req.body.usersAt,
+//     picture: req.body.picture,
+//     video: req.body.video,
+//     postId: req.body.postId,
+//     createdAt: req.body.createdAt,
+//   };
+
+//   try {
+//     post = await Post.findOneAndUpdate(
+//       {
+//         _id: req.body.postId,
+//       },
+//       {
+//         $push: { comments: {comments: userDetails} },
+//       }
+//     );
+//   } catch (err) {
+//     console.log(err);
+//   }
+//   if (!post) {
+//     return res.status(404).json({ message: "Can't Comment On This Post" });
+//   }
+//   // console.log(post);
+//   return res.status(200).json({ message: "Successfully Commented on a Post" });
+// });
 
 //Quoted Replies
 router.put("/quote-tweet", async (req, res) => {
@@ -157,11 +253,12 @@ router.put("/quote-tweet", async (req, res) => {
     console.log(err);
   }
   if (!post) {
-    return res.status(404).json({ message: "Can't Comment On This Post" });
+    return res.status(404).json({ message: "Can't Quote this tweet" });
   }
   console.log(post);
-  return res.status(200).json({ message: "Successfully Commented on a Post" });
+  return res.status(200).json({ message: "Successfully Quoted this tweet" });
 });
+
 
 //UPDATE POST - Update all of users post, using the put method, we get the id of what we are updating, we use the post id to update the post
 router.put("/:id", async (req, res) => {
@@ -257,6 +354,90 @@ router.get(`/get-tweet/:username`, async (req, res) => {
 
   return res.status(200).json({ posts });
 });
+
+
+//Like a Tweet Comment
+router.put("/:id/:newId/like-comment", async (req, res) => {
+  let post;
+  const id = req.params.id;
+  const newId = req.params.newId;
+  const userDetails = {
+    username: req.body.username,
+    profileDp: req.body.profileDp,
+    usersAt: req.body.usersAt,
+    postId: req.body.postId,
+    createdAt: req.body.createdAt,
+    likeId: req.body.likeId,
+  };
+  //Find id in Post and update, then push the userDetails into the likes array
+  try {
+    post = await Post.findOneAndUpdate(
+      { _id: id, "comments.newId": newId },
+      {
+      $push: {"comment.$.like": userDetails}
+    }
+    );
+  } catch (err) {
+    console.log(err);
+  }
+  if (!post) {
+    return res.status(404).json({ message: "You cannot like this comment" });
+  }
+  return res.status(200).json({ message: "You just liked this comment" });
+});
+
+//Reply someone's comment
+router.put("/:id/:newId/replies-comments", async (req, res) => {
+  const id = req.params.id;
+  let post;
+  const newId = req.params.newId;
+  const userDetails = {
+    username: req.body.username,
+    photo: req.body.profileDp,
+    comment: req.body.comment,
+    usersAt: req.body.usersAt,
+    picture: req.body.picture,
+    video: req.body.video,
+    postId: req.body.postId,
+    createdAt: req.body.createdAt,
+    newId: req.body.newId,
+    reply: req.body.reply,
+    like: req.body.like,
+    retweet: req.body.retweet,
+  };
+
+  try {
+    post = await Post.findOneAndUpdate(
+     {_id: id, "comments.newId": newId},
+      {
+        $push: { "comments.$.comment": userDetails },
+      }
+    );
+  } catch (err) {
+    console.log(err);
+  }
+  if (!post) {
+    return res.status(404).json({ message: "Can't Comment On This Post" });
+  }
+  // console.log(post);
+  return res.status(200).json({ message: "Successfully Commented on a Post" });
+});
+
+//Get a single comment
+router.get(`/:id/:newId`, async (req, res) => {
+  const id = req.params.id;
+  const newId = req.params.newId;
+  let comments;
+  try {
+    comments = await Post.find({_id: id, comments: {$elemMatch: {newId: newId}} }, {"comments.$": 1})
+  } catch (err) {
+    res.status(500).json(err);
+  }
+  if (!comments) {
+    return res.status(404).json({ message: "No posts found" });
+  }
+  return res.status(200).json({ comments });
+})
 
 //GET all posts
 //Step 1: Get username and catName from req.query.user

@@ -41,16 +41,17 @@ const TweetSchema = new mongoose.Schema(
       required: false,
       like: {
         type: Array,
-        required: false,
+        required: true,
+        unique: true,
       },
       retweet: {
         type: Array,
-        required: false,
+        required: true,
       },
-      comments: {
+      reply: {
         type: Array,
-        required: false,
-      }
+        required: true,
+      },
     },
     retweet: {
       type: Array,
@@ -64,15 +65,6 @@ const TweetSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
-    bookmarks: {
-      type: Array,
-      required: false,
-    },
-    // time: {
-    //   type: Date,
-    //   required: true,
-    //   default: Date.now()
-    // },
   },
   { timestamps: true }
 );
