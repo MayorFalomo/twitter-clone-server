@@ -361,6 +361,7 @@ router.put("/:id/:newId/like-comment", async (req, res) => {
   let post;
   const id = req.params.id;
   const newId = req.params.newId;
+
   const userDetails = {
     username: req.body.username,
     profileDp: req.body.profileDp,
@@ -374,7 +375,7 @@ router.put("/:id/:newId/like-comment", async (req, res) => {
     post = await Post.findOneAndUpdate(
       { _id: id, "comments.newId": newId },
       {
-      $push: {"comment.$.like": userDetails}
+        $push: { "comments.$.like":  userDetails }
     }
     );
   } catch (err) {
@@ -386,6 +387,37 @@ router.put("/:id/:newId/like-comment", async (req, res) => {
   return res.status(200).json({ message: "You just liked this comment" });
 });
 
+//Retweet a Tweet Comment
+router.put("/:id/:newId/retweet-comment", async (req, res) => {
+  let post;
+  const id = req.params.id;
+  const newId = req.params.newId;
+
+  const userDetails = {
+    username: req.body.username,
+    profileDp: req.body.profileDp,
+    usersAt: req.body.usersAt,
+    postId: req.body.postId,
+    createdAt: req.body.createdAt,
+    retweetId: req.body.retweetId,
+  };
+  //Find id in Post and update, then push the userDetails into the likes array
+  try {
+    post = await Post.findOneAndUpdate(
+      { _id: id, "comments.newId": newId },
+      {
+        $push: { "comments.$.retweet":  userDetails }
+    }
+    );
+  } catch (err) {
+    console.log(err);
+  }
+  if (!post) {
+    return res.status(404).json({ message: "You cannot retweet this comment" });
+  }
+  return res.status(200).json({ message: "You just retweeted this comment" });
+});
+
 //Reply someone's comment
 router.put("/:id/:newId/replies-comments", async (req, res) => {
   const id = req.params.id;
@@ -393,15 +425,14 @@ router.put("/:id/:newId/replies-comments", async (req, res) => {
   const newId = req.params.newId;
   const userDetails = {
     username: req.body.username,
-    photo: req.body.profileDp,
-    comment: req.body.comment,
+    profileDp: req.body.profileDp,
+    comments: req.body.comments,
     usersAt: req.body.usersAt,
     picture: req.body.picture,
     video: req.body.video,
     postId: req.body.postId,
     createdAt: req.body.createdAt,
     newId: req.body.newId,
-    reply: req.body.reply,
     like: req.body.like,
     retweet: req.body.retweet,
   };
