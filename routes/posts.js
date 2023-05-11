@@ -166,6 +166,7 @@ router.put("/comments", async (req, res) => {
     createdAt: req.body.createdAt,
     comment: req.body.comment,
     newId: req.body.newId,
+    likes: req.body.likes,
   };
 
   try {
@@ -238,6 +239,7 @@ router.put("/quote-tweet", async (req, res) => {
     video: req.body.video,
     postId: req.body.postId,
     createdAt: req.body.createdAt,
+    newId: req.body.newId,
   };
 
   try {
@@ -439,7 +441,7 @@ router.put("/:id/:newId/replies-comments", async (req, res) => {
 
   try {
     post = await Post.findOneAndUpdate(
-     {_id: id, "comments.newId": newId},
+      { _id: id, "comments.newId": newId },
       {
         $push: { "comments.$.comment": userDetails },
       }
