@@ -56,7 +56,7 @@ const UserSchema = new mongoose.Schema(
     birthday: {
       type: String,
       required: false,
-      default: "April, 19th, 1999"
+      default: "April, 19th, 2023"
     },
     links: {
       type: String,
