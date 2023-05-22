@@ -123,7 +123,7 @@ router.put("/retweet-tweet", async (req, res) => {
 
 //UnRetweet a Tweet
 router.put("/un-retweet", async (req, res) => {
-  let like;
+  let unRetweet;
   const userDetails = {
     username: req.body.username,
     profileDp: req.body.profileDp,
@@ -131,7 +131,7 @@ router.put("/un-retweet", async (req, res) => {
     postId: req.body.postId,
   };
   try {
-    like = await Post.findByIdAndUpdate(
+    unRetweet = await Post.findByIdAndUpdate(
       {
         _id: req.body.postId,
       },
@@ -377,7 +377,7 @@ router.put("/:id/:newId/like-comment", async (req, res) => {
     post = await Post.findOneAndUpdate(
       { _id: id, "comments.newId": newId },
       {
-        $push: { "comments.$.like":  userDetails }
+        $push: { "comments.$.likes":  userDetails }
     }
     );
   } catch (err) {
@@ -387,6 +387,36 @@ router.put("/:id/:newId/like-comment", async (req, res) => {
     return res.status(404).json({ message: "You cannot like this comment" });
   }
   return res.status(200).json({ message: "You just liked this comment" });
+});
+
+// UnLike a Tweet Comment
+router.put("/:id/:newId/unlike-comment", async (req, res) => {
+  let post;
+  const id = req.params.id;
+  const newId = req.params.newId;
+
+  const userDetails = {
+    username: req.body.username,
+    profileDp: req.body.profileDp,
+    usersAt: req.body.usersAt,
+    postId: req.body.postId,
+    createdAt: req.body.createdAt,
+    likeId: req.body.likeId,
+  };
+  //Find id in Post and update, then push the userDetails into the likes array
+  try {
+    post = await Post.findOneAndUpdate(
+      { _id: id, "comments.newId": newId },
+      { $pull: { "comments.$.likes": userDetails } },
+      {multi: true }
+    );
+  } catch (err) {
+    console.log(err);
+  }
+  if (!post) {
+    return res.status(404).json({ message: "You cannot unliked this comment" });
+  }
+  return res.status(200).json({ message: "You just unLiked this comment" });
 });
 
 //Retweet a Tweet Comment
@@ -486,12 +516,6 @@ router.get("/", async (req, res) => {
     if ((username, profession)) {
       //Finds username in the POst Model then Returns a Post model(object) with a specific username
       posts = await Post.find({ username, profession });
-    } else if (categoryName) {
-      posts = await Post.find({
-        categories: {
-          $in: [categoryName],
-        },
-      });
     } else {
       posts = await Post.find();
       // console.log(posts);
