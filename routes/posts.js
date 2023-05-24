@@ -17,19 +17,36 @@ router.post("/", async (req, res) => {
 //Like a tweet
 router.put("/liketweet", async (req, res) => {
   let post;
-
+  let user;
   const userDetails = {
     username: req.body.username,
     profileDp: req.body.profileDp,
     usersAt: req.body.usersAt,
     postId: req.body.postId,
+    currentUserId: req.body.currentUserId,
+    currentUserName: req.body.currentUserName,
   };
   //Find id in Post and update, then push the userDetails into the likes array
   //What do we need? we get the _id
   try {
     post = await Post.findByIdAndUpdate(req.body.postId, {
       $push: { likes: userDetails },
+      // $push: { User: {notifications: userDetails}}
     });
+      // Create a notification message
+    const notificationMessage = "liked your tweet";
+    // Create a notification object with the message and userDetails
+    const notification = {
+      message: notificationMessage,
+      ...userDetails,
+    };
+    console.log(notification, "notifications");
+    // Find the user whose post was liked and push the notification object into their notifications array
+    user = await User.findOneAndUpdate(
+      { username: userDetails.username },
+      { $push: { notifications: notification } }
+    );
+
   } catch (err) {
     console.log(err);
   }
@@ -38,6 +55,7 @@ router.put("/liketweet", async (req, res) => {
   }
   return res.status(200).json({ message: "You have liked this post" });
 });
+
 
 // //Like a tweet comment
 // router.put("/comment-liketweet", async (req, res) => {
@@ -99,12 +117,19 @@ router.put("/unlike-tweet", async (req, res) => {
 //Retweet a tweet
 router.put("/retweet-tweet", async (req, res) => {
   let post;
-
+  let retweet;
+  let user;
   const userDetails = {
-    username: req.body.username,
+    username: req.body.username, //the username is for the array of the person whose notifications array i'm updating
     profileDp: req.body.profileDp,
     usersAt: req.body.usersAt,
     postId: req.body.postId,
+    currentUserName: req.body.currentUserName,
+    tweets: req.body.tweets,
+    picture: req.body.picture,
+    video: req.body.video,
+    retweets: req.body.retweets,
+    likes: req.body.likes,
   };
   //Find id in Post and update, then push the userDetails into the likes array
   //What do we need? we get the _id
@@ -112,6 +137,24 @@ router.put("/retweet-tweet", async (req, res) => {
     post = await Post.findByIdAndUpdate(req.body.postId, {
     $push: { retweet: userDetails },
     });
+      // Create a notification message
+    const notificationMessage = "retweeted this tweet";
+    // Create a notification object with the message and userDetails
+    const notification = {
+      message: notificationMessage,
+      ...userDetails,
+    };
+     // Push the retweeted tweet to the Post array of the currentUserName
+    retweet = await Post.findOneAndUpdate(
+      { username: userDetails.currentUserName },
+      { $push: { userDetails } }
+    );
+
+    // Find the user whose post was liked and push the notification object into their notifications array
+    user = await Post.findOneAndUpdate(
+      { username: userDetails.username },
+      { $push: { notifications: notification } }
+    );
   } catch (err) {
     console.log(err);
   }
