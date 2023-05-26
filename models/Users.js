@@ -39,6 +39,10 @@ const UserSchema = new mongoose.Schema(
       type: Array,
       required: false,
     },
+    retweeted: {
+      type: Array,
+      required: false,
+    },
     bio: {
       type: String,
       required: false,
@@ -67,14 +71,31 @@ const UserSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// UserSchema.pre(["updateOne", "findOneAndUpdate", "findByIdAndUpdate", "updateMany" ], async function (next) {
-//     if(this.get("username")){
-//          let userDoc = await mongoose.model("user").findOne(this._conditions);
-//          await mongoose.model("post").updateOne({ username: userDoc.username },{
-//          username: this.get("username")
-//          });
-//     }
-//     next();
-//   })
+
+UserSchema.pre('save', async function (next) {
+  try {
+    // Find all posts associated with this user
+    const posts = await mongoose.model('Post').find({ user: this._id });
+
+    // Update the profileDp field in each post
+    for (const post of posts) {
+      post.profileDp = this.profilePic;
+      await post.save();
+    }
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+// UserSchema.virtual("posts", {
+//   ref: "Post",
+//   localField: "_id",
+//   foreignField: "username",
+// });
+
+// UserSchema.set("toObject", { virtuals: true });
+// UserSchema.set("toJSON", { virtuals: true });
 
 module.exports = mongoose.model("User", UserSchema);

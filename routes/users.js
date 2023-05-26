@@ -1,6 +1,7 @@
 const User = require("../models/Users");
 const router = require("express").Router();
-const Post = require("../models/Post");
+const Post = require("../models/Post"); 
+
 
 //register a new user
 router.post("/register", async (req, res) => {
@@ -22,13 +23,25 @@ router.post("/register", async (req, res) => {
     });
     //Here we assign the newly created user to the user variable and save() which is a mongoose method), Then we say the res.user should come in json file
     const user = await newUser.save();
-    console.log(user);
     res.status(200).json(user);
   } catch (err) {
     res.status(500).json(err);
   }
 });
 
+//Added retweeted Arrray to all the users at once
+User.updateMany({},
+  { $set: { retweeted: [] } }
+)
+  .then(() => {
+    console.log("Retweeted array updated for all users successfully.");
+  })
+  .catch((err) => {
+    console.log("Error updating retweeted array for users:", err);
+  });
+
+
+//router.get
 router.get('/login/', async (req, res) => {
   const userId = req.params._id;
   
@@ -51,8 +64,9 @@ router.get('/login/', async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
-     const { password, ...others } = user._doc;
-    res.status(200).json(user);
+    const { password, ...others } = user._doc;
+    res.status(200).json(others);
+    //This way hides password
   } catch (err) {
     res.status(500).json(err);
   }
@@ -170,6 +184,29 @@ router.put("/:id", async (req, res) => {
     res.status(400).json({ message: "userId does not match" });
   }
 });
+
+//Route for notifications to empty when opened
+router.put("/notifications", async (req, res) => {
+  if (req.body.userId) {
+    try {
+      const user = await User.findById(req.body.userId);
+
+      if (!user) {
+        return res.status(404).send({ message: "User Not Found"})
+      }
+      user.notifications = [];
+      await user.save();
+      console.log(user.notifications, "User notifications");
+      return res.json(user.notifications)
+    } catch (err) {
+      console.log(err);
+      return res.status(500).send({ message: "Internal Server Error" })
+    }
+  } else {
+    res.json("No user Provided")
+  }
+})
+
 
 // router.put("/:username", async (req, res) => {
 //   if (req.body.username == req.params.username) {

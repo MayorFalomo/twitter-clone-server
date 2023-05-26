@@ -40,7 +40,7 @@ router.put("/liketweet", async (req, res) => {
       message: notificationMessage,
       ...userDetails,
     };
-    console.log(notification, "notifications");
+    // console.log(notification, "notifications");
     // Find the user whose post was liked and push the notification object into their notifications array
     user = await User.findOneAndUpdate(
       { username: userDetails.username },
@@ -134,24 +134,24 @@ router.put("/retweet-tweet", async (req, res) => {
   //Find id in Post and update, then push the userDetails into the likes array
   //What do we need? we get the _id
   try {
+    //This part finds the id of the post that was retweeted and pushes the username of the user that liked it
     post = await Post.findByIdAndUpdate(req.body.postId, {
-    $push: { retweet: userDetails },
+      $push: { retweet: userDetails.currentUserName },
     });
-      // Create a notification message
     const notificationMessage = "retweeted this tweet";
     // Create a notification object with the message and userDetails
     const notification = {
       message: notificationMessage,
       ...userDetails,
     };
-     // Push the retweeted tweet to the Post array of the currentUserName
-    retweet = await Post.findOneAndUpdate(
+     // Push the retweeted tweet to the Post array of the currentUserName since i want that user to have it in he's post array
+    retweet = await User.findOneAndUpdate(
       { username: userDetails.currentUserName },
-      { $push: { userDetails } }
+      { $push: {retweeted: userDetails } }
     );
 
     // Find the user whose post was liked and push the notification object into their notifications array
-    user = await Post.findOneAndUpdate(
+    user = await User.findOneAndUpdate(
       { username: userDetails.username },
       { $push: { notifications: notification } }
     );
@@ -196,6 +196,7 @@ router.put("/un-retweet", async (req, res) => {
 router.put("/comments", async (req, res) => {
   // const postId = req.body._id;
   let post;
+  let user;
   // console.log(req.body._id, "This is postID");
 
   const userDetails = {
@@ -210,6 +211,7 @@ router.put("/comments", async (req, res) => {
     comment: req.body.comment,
     newId: req.body.newId,
     likes: req.body.likes,
+    currentUsername: req.body.currentUsername,
   };
 
   try {
@@ -220,6 +222,19 @@ router.put("/comments", async (req, res) => {
       {
         $push: { comments:  userDetails },
       }
+    );
+      // Create a notification message
+    const notificationMessage = "commented on your tweet";
+    // Create a notification object with the message and userDetails
+    const notification = {
+      message: notificationMessage,
+      ...userDetails,
+    };
+    // console.log(notification, "notifications");
+    // Find the user whose post was liked and push the notification object into their notifications array
+    user = await User.findOneAndUpdate(
+      { username: userDetails.username },
+      { $push: { notifications: notification } }
     );
   } catch (err) {
     console.log(err);
@@ -267,14 +282,16 @@ router.put("/comments", async (req, res) => {
 //   return res.status(200).json({ message: "Successfully Commented on a Post" });
 // });
 
+
 //Quoted Replies
 router.put("/quote-tweet", async (req, res) => {
   // const postId = req.body._id;
   let post;
+  let user;
   // console.log(req.body._id, "This is postID");
 
   const userDetails = {
-    username: req.body.username,
+    username: req.body.username, //This is the important bit
     photo: req.body.profileDp,
     comments: req.body.comments,
     usersAt: req.body.usersAt,
@@ -283,6 +300,7 @@ router.put("/quote-tweet", async (req, res) => {
     postId: req.body.postId,
     createdAt: req.body.createdAt,
     newId: req.body.newId,
+    currentUsername: req.body.currentUsername
   };
 
   try {
@@ -293,6 +311,18 @@ router.put("/quote-tweet", async (req, res) => {
       {
         $push: { quoted: userDetails },
       }
+    );
+    // The notification message
+    const notificationMessage = "quoted your tweet";
+    // The notification object with the message and userDetails
+    const notification = {
+      message: notificationMessage,
+      ...userDetails,
+    };
+    // Find the user whose post was liked and push the notification object into their notifications array
+    user = await User.findOneAndUpdate(
+      { username: userDetails.username },
+      { $push: { notifications: notification } }
     );
   } catch (err) {
     console.log(err);
@@ -378,6 +408,19 @@ router.get("/:id", async (req, res) => {
 //   return res.status(200).json({ post });
 // })
 
+
+
+// find and populate profileDp with profilePic
+(async () => {
+  let posts
+  try {
+    posts = await Post.find().populate("profileDp", "profilePic");
+    // console.log("Posts:", posts);
+  } catch (err) {
+    console.log("Error fetching posts:", err);
+  }
+})();
+
 //Get all the post of a single user
 router.get(`/get-tweet/:username`, async (req, res) => {
   const username = req.params.username;
@@ -399,7 +442,6 @@ router.get(`/get-tweet/:username`, async (req, res) => {
 
   return res.status(200).json({ posts });
 });
-
 
 //Like a Tweet Comment
 router.put("/:id/:newId/like-comment", async (req, res) => {

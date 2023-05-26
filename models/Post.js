@@ -12,7 +12,8 @@ const TweetSchema = new mongoose.Schema(
       required: false,
     },
     profileDp: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
     picture: {
@@ -63,7 +64,12 @@ const TweetSchema = new mongoose.Schema(
     userId: {
       type: String,
       required: true,
-    }
+    },
+      user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
   },
   { timestamps: true }
 );
