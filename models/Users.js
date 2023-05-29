@@ -17,7 +17,7 @@ const UserSchema = new mongoose.Schema(
     },
     coverPhoto: {
       type: String,
-      required: true,
+      required: false,
     },
     email: {
       type: String,
@@ -66,36 +66,38 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: false,
       default: "https://mayowa-falomo.netlify.app"
-    }
+    },
+    usersId: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true }
 );
 
-
 UserSchema.pre('save', async function (next) {
   try {
     // Find all posts associated with this user
-    const posts = await mongoose.model('Post').find({ user: this._id });
+    const posts = await mongoose.model('Post').find({ user: this.usersId });
 
     // Update the profileDp field in each post
     for (const post of posts) {
-      post.profileDp = this.profilePic;
+      post.profileDp = this.usersId;
       await post.save();
     }
-
     next();
   } catch (error) {
     next(error);
   }
 });
 
-// UserSchema.virtual("posts", {
-//   ref: "Post",
-//   localField: "_id",
-//   foreignField: "username",
-// });
-
-// UserSchema.set("toObject", { virtuals: true });
-// UserSchema.set("toJSON", { virtuals: true });
+UserSchema.virtual("posts", {
+  ref: "Post",
+  localField: "_id",
+  foreignField: "user",
+  justOne: false,
+  justOne: false,
+  // options: { populate: { path: "profileDp" } }
+});
 
 module.exports = mongoose.model("User", UserSchema);

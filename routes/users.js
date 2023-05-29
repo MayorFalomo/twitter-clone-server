@@ -1,7 +1,7 @@
 const User = require("../models/Users");
 const router = require("express").Router();
 const Post = require("../models/Post"); 
-
+const mongoose = require("mongoose");
 
 //register a new user
 router.post("/register", async (req, res) => {
@@ -9,7 +9,7 @@ router.post("/register", async (req, res) => {
     //Since we imported User from our User schema component here is where we expect our information to be created for new user hence for example username: request.body(A method).username and so forth
     //This is the object we're directly pushing to mongoDb, we get the request from the frontEnd
     const newUser = new User({
-      _id: req.body.userId,
+      userId: req.body.userId,
       username: req.body.username,
       email: req.body.email,
       password: req.body.password,
@@ -40,6 +40,45 @@ User.updateMany({},
     console.log("Error updating retweeted array for users:", err);
   });
 
+//  async function getUserIdentifiers() {
+//   // Fetch user data from the database
+//   const users = await User.find({});
+
+//   // Extract usernames into an array
+//   const userIdentifiers = users.map((user) => user.username);
+
+//   return userIdentifiers;
+// }
+
+// // Call the function to retrieve the array of user identifiers
+// getUserIdentifiers()
+//   .then((userIdentifiers) => {
+//     console.log(userIdentifiers);
+//   })
+//   .catch((error) => {
+//     console.error(error);
+//   });
+
+//This added mongoDb ObjectId to the pre-exisiting User fields
+async function assignObjectIdsToUsers() {
+  try {
+    const users = await User.find({}); // Fetch all users
+
+    for (const user of users) {
+      user.usersId = new mongoose.Types.ObjectId(); // Generate a new ObjectId
+      // console.log(user.usersId);
+
+      await user.save(); // Save the updated user
+    }
+
+    console.log("ObjectIds assigned to users successfully.");
+  } catch (error) {
+    console.error("Error assigning ObjectIds to users:", error);
+  }
+}
+
+// Call the function to start the process
+assignObjectIdsToUsers();
 
 //router.get
 router.get('/login/', async (req, res) => {
@@ -72,6 +111,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+//Get a single user by username
 router.get(`/get-user/:username`, async (req, res) => {
   const username = req.params.username;
   try {
@@ -187,25 +227,28 @@ router.put("/:id", async (req, res) => {
 
 //Route for notifications to empty when opened
 router.put("/notifications", async (req, res) => {
-  if (req.body.userId) {
+  if (req.body.userId && req.body.userId.trim() !== '') {
     try {
       const user = await User.findById(req.body.userId);
+      console.log(user);
 
       if (!user) {
-        return res.status(404).send({ message: "User Not Found"})
+        return res.status(404).json({ message: "User Not Found" });
       }
+
       user.notifications = [];
+      user.markModified('notifications');
+      console.log(user.notifications);
       await user.save();
-      console.log(user.notifications, "User notifications");
-      return res.json(user.notifications)
+      return res.json(user.notifications);
     } catch (err) {
       console.log(err);
-      return res.status(500).send({ message: "Internal Server Error" })
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   } else {
-    res.json("No user Provided")
+    return res.status(400).json({ message: "Invalid userId provided" });
   }
-})
+});
 
 
 // router.put("/:username", async (req, res) => {

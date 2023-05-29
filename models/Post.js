@@ -12,8 +12,9 @@ const TweetSchema = new mongoose.Schema(
       required: false,
     },
     profileDp: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      type: String,
+      // default: "https://i.pinimg.com/564x/33/f4/d8/33f4d8c6de4d69b21652512cbc30bb05.jpg",
+      // ref: "User",
       required: true,
     },
     picture: {
@@ -24,10 +25,7 @@ const TweetSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
-    gif: {
-    type: String,
-      required: false,
-    },
+
     likes: {
       type: Array,
       required: false,
@@ -62,14 +60,15 @@ const TweetSchema = new mongoose.Schema(
       required: false,
     },
     userId: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
-      user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
+  //     user: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: 'User',
+  //   required: false,
+  // },
   },
   { timestamps: true }
 );

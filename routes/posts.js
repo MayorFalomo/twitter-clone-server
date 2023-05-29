@@ -3,17 +3,83 @@ const Post = require("../models/Post");
 const User = require("../models/Users");
 
 //CREATE Tweet - Using the post method for creating/adding new Tweet
+// router.post("/", async (req, res) => {
+//   const newPost = new Post(req.body);
+//   try {
+//     const savedPost = await newPost.save();
+//     // console.log(savedPost);
+//     res.status(200).json(savedPost);
+//   } catch (err) {
+//     res.status(500).json(err);
+//   }
+// });
+
 router.post("/", async (req, res) => {
-  const newPost = new Post(req.body);
   try {
+    const {_id, userId, username, profileDp, tweet, usersAt, video, picture, likes, retweet, followers, } = req.body;
+
+    // Find the user by their _id
+    const user = await User.findOne({ _id });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Create a new post and associate it with the user
+    const newPost = new Post({
+      userId,
+      username,
+      profileDp,
+      tweet,
+      usersAt,
+      video,
+      picture,
+      likes,
+      retweet,
+      followers
+    });
+
+    // Save the new post
     const savedPost = await newPost.save();
-    // console.log(savedPost);
+
+    // Return the saved post in the response
     res.status(200).json(savedPost);
   } catch (err) {
-    res.status(500).json(err);
+    console.error(err);
+    res.status(500).json({ message: "Error creating post" });
   }
 });
 
+// Post.updateMany({},
+//   { $set: {profileDp: "" } }
+// )
+//   .then(() => {
+//     console.log("Added profileDp for all users successfully.");
+//   })
+//   .catch((err) => {
+//     console.log("Error updating retweeted array for users:", err);
+//   });
+
+// Post.updateMany({ profileDp: { $exists: false } }, { $set: { profileDp: "" } })
+//   .then(() => {
+//     console.log("ProfileDp field updated for all posts successfully.");
+//   })
+//   .catch((err) => {
+//     console.log("Error updating profileDp field in posts:", err);
+//   });
+
+// Post.updateMany(
+//   { profileDp: { $exists: false } },
+//   { $set: { profileDp: "" } },
+//   { validateBeforeSave: false } // Disable validation temporarily
+// )
+//   .then(() => {
+//     console.log("ProfileDp field updated for all posts successfully.");
+//   })
+//   .catch((err) => {
+//     console.log("Error updating profileDp field in posts:", err);
+//   });
+  
 //Like a tweet
 router.put("/liketweet", async (req, res) => {
   let post;
@@ -25,11 +91,12 @@ router.put("/liketweet", async (req, res) => {
     postId: req.body.postId,
     currentUserId: req.body.currentUserId,
     currentUserName: req.body.currentUserName,
+    createdAt: Date.now(), // Add the createdAt timestamp
   };
   //Find id in Post and update, then push the userDetails into the likes array
   //What do we need? we get the _id
   try {
-    post = await Post.findByIdAndUpdate(req.body.postId, {
+    post = await Post.findByIdAndUpdate(req.body._id, {
       $push: { likes: userDetails },
       // $push: { User: {notifications: userDetails}}
     });
@@ -130,6 +197,7 @@ router.put("/retweet-tweet", async (req, res) => {
     video: req.body.video,
     retweets: req.body.retweets,
     likes: req.body.likes,
+    createdAt: Date.now(), // Add the createdAt timestamp
   };
   //Find id in Post and update, then push the userDetails into the likes array
   //What do we need? we get the _id
@@ -138,7 +206,7 @@ router.put("/retweet-tweet", async (req, res) => {
     post = await Post.findByIdAndUpdate(req.body.postId, {
       $push: { retweet: userDetails.currentUserName },
     });
-    const notificationMessage = "retweeted this tweet";
+    const notificationMessage = "retweeted your tweet";
     // Create a notification object with the message and userDetails
     const notification = {
       message: notificationMessage,
@@ -192,6 +260,99 @@ router.put("/un-retweet", async (req, res) => {
   return res.status(200).json({ message: "Successfully Disliked tweet" });
 });
 
+
+const updateUserIdInPosts = async () => {
+  try {
+    const posts = await Post.find({}); // Fetch all posts
+
+    for (const post of posts) {
+      const username = post.username;
+
+      // Find the associated user and get the _id
+      const user = await User.findOne({ username });
+      // console.log(user, "this is user");
+      if (user) {
+        const userId = user.usersId;
+// console.log(user.usersId, "this is user.userId");
+        // Update the userId field in the post
+        // console.log(post.userId, "this is post.userId");
+       post.userId = userId;
+        // console.log(post.userId, "this is post.userId");
+        // console.log(userId, "this is userId");
+        // if (post.userId = userId) {
+        //   console.log("I am True");
+        // } else {
+        //   console.log("Iam false");
+        // }
+        await post.save();
+      }
+    }
+
+    console.log('userId field updated in all posts successfully.');
+  } catch (error) {
+    console.error('Error updating userId field in posts:', error);
+  }
+};
+
+updateUserIdInPosts();
+
+// const updateProfileDpInPosts = async () => {
+//   try {
+//     const posts = await Post.find(); // Fetch all posts
+
+//     for (const post of posts) {
+//       console.log(post, "This is post");
+
+//       const username = post.username;
+//       console.log(username, "This is userId");
+
+//       // Find the associated user and get the current profilePic
+//       const user = await User.findOne({ username });
+//       console.log(user, "This is user");
+//       const profilePic = user.profilePic;
+
+//       // Update the profileDp field in the post
+//       post.profileDp = profilePic;
+
+//       //An alternative way to update the profileDp
+//       // const profilePic = user.profilePic;
+//       // post.profileDp = profilePic;
+//       await post.save();
+//     }
+
+//     console.log('ProfileDp field updated in all posts successfully.');
+//   } catch (error) {
+//     console.error('Error updating profileDp field in posts:', error);
+//   }
+// };
+
+// updateProfileDpInPosts();
+
+const updateProfileDpInPosts = async () => {
+  try {
+    const posts = await Post.find(); // Fetch all posts
+
+    for (const post of posts) {
+      const username = post.username;
+
+      // Find the associated user and get the current profilePic
+      const user = await User.findOne({ username });
+      const profilePic = user.profilePic;
+
+      // Update the profileDp field in the post
+      post.profileDp = profilePic;
+      // console.log(post.profileDp);
+      await post.save();
+    }
+
+    // console.log('ProfileDp field updated in all posts successfully.');
+  } catch (error) {
+    console.error('Error updating profileDp field in posts:', error);
+  }
+};
+
+updateProfileDpInPosts();
+
 //Comment On A Tweet
 router.put("/comments", async (req, res) => {
   // const postId = req.body._id;
@@ -207,11 +368,12 @@ router.put("/comments", async (req, res) => {
     picture: req.body.picture,
     video: req.body.video,
     postId: req.body.postId,
-    createdAt: req.body.createdAt,
+    // createdAt: req.body.createdAt,
     comment: req.body.comment,
     newId: req.body.newId,
     likes: req.body.likes,
     currentUsername: req.body.currentUsername,
+    createdAt: Date.now(), // Add the createdAt timestamp
   };
 
   try {
@@ -300,7 +462,9 @@ router.put("/quote-tweet", async (req, res) => {
     postId: req.body.postId,
     createdAt: req.body.createdAt,
     newId: req.body.newId,
-    currentUsername: req.body.currentUsername
+    currentUsername: req.body.currentUsername,
+    createdAt: Date.now(), // Add the createdAt timestamp
+
   };
 
   try {
@@ -411,15 +575,15 @@ router.get("/:id", async (req, res) => {
 
 
 // find and populate profileDp with profilePic
-(async () => {
-  let posts
-  try {
-    posts = await Post.find().populate("profileDp", "profilePic");
-    // console.log("Posts:", posts);
-  } catch (err) {
-    console.log("Error fetching posts:", err);
-  }
-})();
+// (async () => {
+//   let posts
+//   try {
+//     posts = await Post.find().populate("profileDp", "profilePic");
+//     // console.log("Posts:", posts);
+//   } catch (err) {
+//     console.log("Error fetching posts:", err);
+//   }
+// })();
 
 //Get all the post of a single user
 router.get(`/get-tweet/:username`, async (req, res) => {
@@ -456,6 +620,8 @@ router.put("/:id/:newId/like-comment", async (req, res) => {
     postId: req.body.postId,
     createdAt: req.body.createdAt,
     likeId: req.body.likeId,
+    createdAt: Date.now(),
+
   };
   //Find id in Post and update, then push the userDetails into the likes array
   try {
@@ -593,18 +759,11 @@ router.get(`/:id/:newId`, async (req, res) => {
 //Step 3: If it's username, find username in Post and assign it to posts which could be anything
 //step 4: Else if there's no username let's find categories then we use the $in method to say (if it's inside) that's our catName
 router.get("/", async (req, res) => {
-  const username = req.query.user;
-  const profession = req.query.profession;
-  const categoryName = req.query.cat;
   try {
     let posts;
-    if ((username, profession)) {
-      //Finds username in the POst Model then Returns a Post model(object) with a specific username
-      posts = await Post.find({ username, profession });
-    } else {
-      posts = await Post.find();
-      // console.log(posts);
-    }
+    posts = await Post.find({});
+    posts = await Post.find().populate("user profileDp");
+    console.log(posts);
     res.status(200).json(posts);
   } catch (err) {
     res.status(500).json(err);
