@@ -20,14 +20,13 @@ router.post("/", async (req, res) => {
 
     // Find the user by their _id
     const user = await User.findOne({ _id });
-    console.log(user);
+    // console.log(user);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
     // Create a new post and associate it with the user
     const newPost = new Post({
-      _id,
       userId,
       username,
       profileDp,
