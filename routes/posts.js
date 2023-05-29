@@ -762,8 +762,8 @@ router.get("/", async (req, res) => {
   try {
     let posts;
     posts = await Post.find({});
-    posts = await Post.find().populate("user profileDp");
-    console.log(posts);
+    // posts = await Post.find().populate("user profileDp");
+    // console.log(posts);
     res.status(200).json(posts);
   } catch (err) {
     res.status(500).json(err);
