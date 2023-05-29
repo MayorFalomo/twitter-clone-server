@@ -16,10 +16,11 @@ const User = require("../models/Users");
 
 router.post("/", async (req, res) => {
   try {
-    const {_id, userId, username, profileDp, tweet, usersAt, video, picture, likes, retweet, followers, } = req.body;
-
+    const { userId, username, profileDp, tweet, usersAt, video, picture, likes, retweet, followers, } = req.body;
+    // const id = req.body.id
+    const id = req.body.usersId
     // Find the user by their _id
-    const user = await User.findOne({ _id });
+    const user = await User.findOne({ id });
     console.log(user);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
