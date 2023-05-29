@@ -28,16 +28,16 @@ router.post("/", async (req, res) => {
 
     // Create a new post and associate it with the user
     const newPost = new Post({
-      userId,
-      username,
-      profileDp,
-      tweet,
-      usersAt,
-      video,
-      picture,
-      likes,
-      retweet,
-      followers,
+      userId: req.body.userId,
+      username: req.body.username,
+      profileDp: req.body.profileDp ,
+      tweet: req.body.tweet,
+      usersAt: req.body.usersAt ,
+      video: req.body.video ,
+      picture: req.body.picture,
+      likes: req.body.likes,
+      retweet: req.body.retweet,
+      followers: req.body.followers,
       newId: req.body.newId,
     });
 
