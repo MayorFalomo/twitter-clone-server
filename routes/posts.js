@@ -20,7 +20,7 @@ router.post("/", async (req, res) => {
 
     // Find the user by their _id
     const user = await User.findOne({ _id });
-
+    console.log(user);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -36,7 +36,8 @@ router.post("/", async (req, res) => {
       picture,
       likes,
       retweet,
-      followers
+      followers,
+      newId: req.body.newId,
     });
 
     // Save the new post
@@ -260,7 +261,7 @@ router.put("/un-retweet", async (req, res) => {
   return res.status(200).json({ message: "Successfully Disliked tweet" });
 });
 
-
+//Update Username 
 const updateUserIdInPosts = async () => {
   try {
     const posts = await Post.find({}); // Fetch all posts
@@ -548,7 +549,7 @@ router.delete("/:id", async (req, res) => {
 //GET a singlePOST
 router.get("/:id", async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id);
+    const post = await Post.findById(req.params._id);
     res.status(200).json(post);
   } catch (err) {
     res.status(500).json(err);
