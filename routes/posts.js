@@ -3,54 +3,54 @@ const Post = require("../models/Post");
 const User = require("../models/Users");
 
 //CREATE Tweet - Using the post method for creating/adding new Tweet
-// router.post("/", async (req, res) => {
-//   const newPost = new Post(req.body);
-//   try {
-//     const savedPost = await newPost.save();
-//     // console.log(savedPost);
-//     res.status(200).json(savedPost);
-//   } catch (err) {
-//     res.status(500).json(err);
-//   }
-// });
-
 router.post("/", async (req, res) => {
+  const newPost = new Post(req.body);
   try {
-    const { userId, username, profileDp, tweet, usersAt, video, picture, likes, retweet, followers, } = req.body;
-    // const id = req.body.id
-    const id = req.body.usersId
-    // Find the user by their _id
-    const user = await User.findOne({ id });
-    console.log(user);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // Create a new post and associate it with the user
-    const newPost = new Post({
-      userId: req.body.userId,
-      username: req.body.username,
-      profileDp: req.body.profileDp ,
-      tweet: req.body.tweet,
-      usersAt: req.body.usersAt ,
-      video: req.body.video ,
-      picture: req.body.picture,
-      likes: req.body.likes,
-      retweet: req.body.retweet,
-      followers: req.body.followers,
-      newId: req.body.newId,
-    });
-
-    // Save the new post
     const savedPost = await newPost.save();
-
-    // Return the saved post in the response
+    console.log(savedPost);
     res.status(200).json(savedPost);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Error creating post" });
+    res.status(500).json(err);
   }
 });
+
+// router.post("/", async (req, res) => {
+//   try {
+//     const { userId, username, profileDp, tweet, usersAt, video, picture, likes, retweet, followers, } = req.body;
+//     // const id = req.body.id
+//     const id = req.body.usersId
+//     // Find the user by their _id
+//     const user = await User.findOne({ id });
+//     console.log(user);
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     // Create a new post and associate it with the user
+//     const newPost = new Post({
+//       userId: req.body.userId,
+//       username: req.body.username,
+//       profileDp: req.body.profileDp ,
+//       tweet: req.body.tweet,
+//       usersAt: req.body.usersAt ,
+//       video: req.body.video ,
+//       picture: req.body.picture,
+//       likes: req.body.likes,
+//       retweet: req.body.retweet,
+//       followers: req.body.followers,
+//       newId: req.body.newId,
+//     });
+
+//     // Save the new post
+//     const savedPost = await newPost.save();
+
+//     // Return the saved post in the response
+//     res.status(200).json(savedPost);
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: "Error creating post" });
+//   }
+// });
 
 // Post.updateMany({},
 //   { $set: {profileDp: "" } }
@@ -549,6 +549,15 @@ router.delete("/:id", async (req, res) => {
 
 //GET a singlePOST
 router.get("/:id", async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    res.status(200).json(post);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+//GET a singlePOST
+router.get("/:userid", async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
     res.status(200).json(post);
