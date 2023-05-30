@@ -244,11 +244,15 @@ router.get("/:id/get-notifications", async (req, res) => {
   }
 });
 
-//Route for notifications to empty when opened
-router.put("/:id/clear-notifications", async (req, res) => {
-  // if (req.body.id && req.body.id.trim() !== '') {
+router.put("/clear-notifications/clear", async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const { id } = req.body;
+    
+    if (!id || id.trim() === '') {
+      return res.status(400).json({ message: "Invalid ID" });
+    }
+
+    const user = await User.findById(id);
     console.log(user, "this is user");
 
     if (!user) {
@@ -264,11 +268,34 @@ router.put("/:id/clear-notifications", async (req, res) => {
     console.log(err);
     return res.status(500).json({ message: "Internal Server Error" });
   }
-  //   } else {
-  //     return res.status(400).json({ message: "Invalid userId provided" });
-  //   }
-  // }
 });
+
+
+//Route for notifications to empty when opened
+// router.put("/:id/clear-notifications", async (req, res) => {
+//   // if (req.body.id && req.body.id.trim() !== '') {
+//   try {
+//     const user = await User.findById(req.params.id);
+//     console.log(user, "this is user");
+
+//     if (!user) {
+//       return res.status(404).json({ message: "User Not Found" });
+//     }
+
+//     user.notifications = [];
+//     user.markModified('notifications');
+//     console.log(user.notifications);
+//     await user.save();
+//     return res.json(user.notifications);
+//   } catch (err) {
+//     console.log(err);
+//     return res.status(500).json({ message: "Internal Server Error" });
+//   }
+//   //   } else {
+//   //     return res.status(400).json({ message: "Invalid userId provided" });
+//   //   }
+//   // }
+// });
 
 
 // router.put("/:username", async (req, res) => {
