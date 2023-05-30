@@ -361,16 +361,16 @@ router.put("/comments", async (req, res) => {
 
   const userDetails = {
     username: req.body.username,
-    photo: req.body.profileDp,
+    profileDp: req.body.profileDp,
     comments: req.body.comments,
     usersAt: req.body.usersAt,
     picture: req.body.picture,
     video: req.body.video,
+      likes: req.body.likes,
+    retweet: req.body.retweet,
     _id: req.body.id,
     comment: req.body.comment,
     newId: req.body.newId,
-    // likes: req.body.likes,
-    currentUsername: req.body.currentUsername,
     createdAt: Date.now(), // Add the createdAt timestamp
   };
 
