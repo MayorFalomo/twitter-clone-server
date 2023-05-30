@@ -225,29 +225,49 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-//Route for notifications to empty when opened
-router.put("/notifications", async (req, res) => {
-  if (req.body.userId && req.body.userId.trim() !== '') {
-    try {
-      const user = await User.findById(req.body.userId);
-      console.log(user);
-
-      if (!user) {
-        return res.status(404).json({ message: "User Not Found" });
-      }
-
-      user.notifications = [];
-      user.markModified('notifications');
-      console.log(user.notifications);
-      await user.save();
-      return res.json(user.notifications);
-    } catch (err) {
-      console.log(err);
-      return res.status(500).json({ message: "Internal Server Error" });
+//Get all a users notifications
+router.get("/:id/get-notifications", async (req, res) => {
+  const userId = req.params.id;
+  //Note that id here is _id but mongodb knows that so use id not _id or it won't work.
+  try {
+    const user = await User.findById(userId);
+    console.log(user, "This is user");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
-  } else {
-    return res.status(400).json({ message: "Invalid userId provided" });
+
+    const notifications = user.notifications;
+    return res.status(200).json(notifications);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
+});
+
+//Route for notifications to empty when opened
+router.put("/:id/clear-notifications", async (req, res) => {
+  // if (req.body.id && req.body.id.trim() !== '') {
+  try {
+    const user = await User.findById(req.params.id);
+    console.log(user, "this is user");
+
+    if (!user) {
+      return res.status(404).json({ message: "User Not Found" });
+    }
+
+    user.notifications = [];
+    user.markModified('notifications');
+    console.log(user.notifications);
+    await user.save();
+    return res.json(user.notifications);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+  //   } else {
+  //     return res.status(400).json({ message: "Invalid userId provided" });
+  //   }
+  // }
 });
 
 

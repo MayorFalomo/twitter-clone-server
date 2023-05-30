@@ -90,15 +90,15 @@ router.put("/liketweet", async (req, res) => {
     username: req.body.username,
     profileDp: req.body.profileDp,
     usersAt: req.body.usersAt,
-    postId: req.body.postId,
-    currentUserId: req.body.currentUserId,
+    tweets: req.body.tweets,
+    _id: req.body.id,
     currentUserName: req.body.currentUserName,
     createdAt: Date.now(), // Add the createdAt timestamp
   };
   //Find id in Post and update, then push the userDetails into the likes array
-  //What do we need? we get the _id
+  //What do we need? we get the id
   try {
-    post = await Post.findByIdAndUpdate(req.body._id, {
+    post = await Post.findByIdAndUpdate(req.body.id, {
       $push: { likes: userDetails },
       // $push: { User: {notifications: userDetails}}
     });
@@ -192,21 +192,17 @@ router.put("/retweet-tweet", async (req, res) => {
     username: req.body.username, //the username is for the array of the person whose notifications array i'm updating
     profileDp: req.body.profileDp,
     usersAt: req.body.usersAt,
-    postId: req.body.postId,
+    _id: req.body.id,
     currentUserName: req.body.currentUserName,
     tweets: req.body.tweets,
-    picture: req.body.picture,
-    video: req.body.video,
-    retweets: req.body.retweets,
-    likes: req.body.likes,
     createdAt: Date.now(), // Add the createdAt timestamp
   };
   //Find id in Post and update, then push the userDetails into the likes array
   //What do we need? we get the _id
   try {
     //This part finds the id of the post that was retweeted and pushes the username of the user that liked it
-    post = await Post.findByIdAndUpdate(req.body.postId, {
-      $push: { retweet: userDetails.currentUserName },
+    post = await Post.findByIdAndUpdate(req.body.id, {
+      $push: { retweet: userDetails },
     });
     const notificationMessage = "retweeted your tweet";
     // Create a notification object with the message and userDetails
@@ -262,7 +258,7 @@ router.put("/un-retweet", async (req, res) => {
   return res.status(200).json({ message: "Successfully Disliked tweet" });
 });
 
-//Update Username 
+//Give all existing users a userId
 const updateUserIdInPosts = async () => {
   try {
     const posts = await Post.find({}); // Fetch all posts
@@ -343,11 +339,12 @@ const updateProfileDpInPosts = async () => {
 
       // Update the profileDp field in the post
       post.profileDp = profilePic;
-      // console.log(post.profileDp);
+      // console.log(post.profileDp, "this is profileDp");
+      // console.log(profilePic, "This is profilePic");
       await post.save();
     }
 
-    // console.log('ProfileDp field updated in all posts successfully.');
+    console.log('ProfileDp field updated in all posts successfully.');
   } catch (error) {
     console.error('Error updating profileDp field in posts:', error);
   }
@@ -369,11 +366,10 @@ router.put("/comments", async (req, res) => {
     usersAt: req.body.usersAt,
     picture: req.body.picture,
     video: req.body.video,
-    postId: req.body.postId,
-    // createdAt: req.body.createdAt,
+    _id: req.body.id,
     comment: req.body.comment,
     newId: req.body.newId,
-    likes: req.body.likes,
+    // likes: req.body.likes,
     currentUsername: req.body.currentUsername,
     createdAt: Date.now(), // Add the createdAt timestamp
   };
@@ -381,7 +377,7 @@ router.put("/comments", async (req, res) => {
   try {
     post = await Post.findByIdAndUpdate(
       {
-        _id: req.body.postId,
+        _id: req.body.id,
       },
       {
         $push: { comments:  userDetails },
