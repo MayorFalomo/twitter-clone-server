@@ -148,7 +148,7 @@ router.put('/follow-user', async (req, res) => {
   let existingUser;
   let user;
   const currentUserDetails = {
-    username: req.body.currentUserName,
+    currentUserName: req.body.currentUserName,
     usersAt: req.body.currentUsersAt,
     profileDp: req.body.currentProfileDp,
     userId: req.body.currentUserId,
@@ -170,7 +170,7 @@ console.log(userToAddToDetails, "userToAddToDetails");
     $push: {following: userToAddToDetails}
     })
       // Create a notification message
-    const notificationMessage = "Followed you";
+    const notificationMessage = "followed you";
     // Create a notification object with the message and userDetails
     const notification = {
       message: notificationMessage,
