@@ -146,21 +146,21 @@ router.put('/follow-user', async (req, res) => {
 
   let userToAddTo;
   let existingUser;
-
+  let user;
   const currentUserDetails = {
     username: req.body.currentUserName,
     usersAt: req.body.currentUsersAt,
     profileDp: req.body.currentProfileDp,
     userId: req.body.currentUserId,
   }
-
+  console.log(currentUserDetails, "currentUserDetails");
   const userToAddToDetails = {
     name: req.body.userToAddToName,
     userAt: req.body.userToAddToAt, //This is a list of userIds. This is a list of usernames
     profilePic: req.body.userToAddToProfilePic,
     usersId: req.body.usersId,
   }
-
+console.log(userToAddToDetails, "userToAddToDetails");
   try {
     userToAddTo = await User.findByIdAndUpdate(userToBeFollowed, {
     $push: {followers: currentUserDetails},
@@ -169,6 +169,20 @@ router.put('/follow-user', async (req, res) => {
     existingUser = await User.findByIdAndUpdate(currentUser, {
     $push: {following: userToAddToDetails}
     })
+      // Create a notification message
+    const notificationMessage = "Followed you";
+    // Create a notification object with the message and userDetails
+    const notification = {
+      message: notificationMessage,
+      ...currentUserDetails,
+    };
+    // console.log(notification, "notifications");
+    // Find the user who was followed and push the notification object into their notifications array
+    user = await User.findOneAndUpdate(
+      { username: userToAddToDetails.name },
+      { $push: { notifications: notification } }
+    );
+
   } catch (err) { console.log(err) }
   
   if (!userToAddTo && !existingUser) {

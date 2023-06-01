@@ -7,7 +7,7 @@ router.post("/", async (req, res) => {
   const newPost = new Post(req.body);
   try {
     const savedPost = await newPost.save();
-    console.log(savedPost);
+    // console.log(savedPost);
     res.status(200).json(savedPost);
   } catch (err) {
     res.status(500).json(err);
@@ -91,8 +91,9 @@ router.put("/liketweet", async (req, res) => {
     profileDp: req.body.profileDp,
     usersAt: req.body.usersAt,
     tweets: req.body.tweets,
-    _id: req.body.id,
+    id: req.body.id,
     currentUserName: req.body.currentUserName,
+    newId: req.body.newId,
     createdAt: Date.now(), // Add the createdAt timestamp
   };
   //Find id in Post and update, then push the userDetails into the likes array
@@ -112,7 +113,7 @@ router.put("/liketweet", async (req, res) => {
     // console.log(notification, "notifications");
     // Find the user whose post was liked and push the notification object into their notifications array
     user = await User.findOneAndUpdate(
-      { username: userDetails.username },
+      { username: userDetails },
       { $push: { notifications: notification } }
     );
 
@@ -157,31 +158,27 @@ router.put("/liketweet", async (req, res) => {
 
 //Unlike a Tweet
 router.put("/unlike-tweet", async (req, res) => {
-  let like;
-  const userDetails = {
-    username: req.body.username,
-    profileDp: req.body.profileDp,
-    usersAt: req.body.usersAt,
-    postId: req.body.postId,
-  };
+  let post;
+  const username = req.body.username;
+
   try {
-    like = await Post.findByIdAndUpdate(
-      {
-        _id: req.body.postId,
-      },
-      { $pull: { likes: userDetails } },
-      { multi: true }
-    );
+    // Find the tweet by its ID and pull the object from the likes array with the given username
+    post = await Post.findByIdAndUpdate(req.body.id, {
+      //pull the object with username provided that is the same with the currentUserName from the likes array
+      $pull: { likes: { currentUserName: username } }
+    });
+
   } catch (err) {
-    ("");
     console.log(err);
   }
-  if (!like) {
-    return res.status(500).json({ message: "Unable To Dislike tweet" });
+
+  if (!post) {
+    return res.status(404).json({ message: "You can't unlike this post" });
   }
 
-  return res.status(200).json({ message: "Successfully Disliked tweet" });
+  return res.status(200).json({ message: "You have unliked this post" });
 });
+
 
 //Retweet a tweet
 router.put("/retweet-tweet", async (req, res) => {
@@ -233,29 +230,21 @@ router.put("/retweet-tweet", async (req, res) => {
 //UnRetweet a Tweet
 router.put("/un-retweet", async (req, res) => {
   let unRetweet;
-  const userDetails = {
-    username: req.body.username,
-    profileDp: req.body.profileDp,
-    usersAt: req.body.usersAt,
-    postId: req.body.postId,
-  };
+  const username = req.body.username;
   try {
     unRetweet = await Post.findByIdAndUpdate(
-      {
-        _id: req.body.postId,
-      },
-      { $pull: { retweet: userDetails } },
-      { multi: true }
+      req.body.id,
+      { $pull: { retweet: {currentUserName: username} } },
     );
   } catch (err) {
     ("");
     console.log(err);
   }
-  if (!like) {
-    return res.status(500).json({ message: "Unable To Dislike tweet" });
+  if (!unRetweet) {
+    return res.status(500).json({ message: "Unable To UnRetweet tweet" });
   }
 
-  return res.status(200).json({ message: "Successfully Disliked tweet" });
+  return res.status(200).json({ message: "Successfully UnRetweeted tweet" });
 });
 
 //Give all existing users a userId
@@ -268,20 +257,9 @@ const updateUserIdInPosts = async () => {
 
       // Find the associated user and get the _id
       const user = await User.findOne({ username });
-      // console.log(user, "this is user");
       if (user) {
         const userId = user.usersId;
-// console.log(user.usersId, "this is user.userId");
-        // Update the userId field in the post
-        // console.log(post.userId, "this is post.userId");
        post.userId = userId;
-        // console.log(post.userId, "this is post.userId");
-        // console.log(userId, "this is userId");
-        // if (post.userId = userId) {
-        //   console.log("I am True");
-        // } else {
-        //   console.log("Iam false");
-        // }
         await post.save();
       }
     }
