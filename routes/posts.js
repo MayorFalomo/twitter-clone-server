@@ -218,6 +218,8 @@ router.put("/retweet-tweet", async (req, res) => {
       { username: userDetails.username },
       { $push: { notifications: notification } }
     );
+    
+    
   } catch (err) {
     console.log(err);
   }
