@@ -9,10 +9,12 @@ router.post("/register", async (req, res) => {
     //Since we imported User from our User schema component here is where we expect our information to be created for new user hence for example username: request.body(A method).username and so forth
     //This is the object we're directly pushing to mongoDb, we get the request from the frontEnd
     const newUser = new User({
-      userId: req.body.userId,
+      _id: req.body.id, 	//_id is a required field for user to be able to connect to db
+      // userId: req.body.userId,
       username: req.body.username,
       email: req.body.email,
       password: req.body.password,
+      // profileDp: req.body.profileDp,
       profilePic: req.body.profilePic,
       coverPhoto: req.body.coverPhoto,
       bio: req.body.bio,
@@ -20,25 +22,32 @@ router.post("/register", async (req, res) => {
       following: req.body.following,
       followers: req.body.followers,
       notifications: req.body.notifications,
+      retweeted: req.body.retweeted,
+      // links: req.body.links,
+      // location: req.body.location,
     });
+    // console.log(newUser);
     //Here we assign the newly created user to the user variable and save() which is a mongoose method), Then we say the res.user should come in json file
     const user = await newUser.save();
+    console.log(user, "I am user");
     res.status(200).json(user);
   } catch (err) {
     res.status(500).json(err);
   }
 });
 
+
 //Added retweeted Arrray to all the users at once
-User.updateMany({},
-  { $set: { retweeted: [] } }
-)
-  .then(() => {
-    console.log("Retweeted array updated for all users successfully.");
-  })
-  .catch((err) => {
-    console.log("Error updating retweeted array for users:", err);
-  });
+// User.updateMany({},
+//   { $set: { retweeted: [] } }
+// )
+//   .then(() => {
+//     console.log("Retweeted array updated for all users successfully.");
+//   })
+//   .catch((err) => {
+//     console.log("Error updating retweeted array for users:", err);
+//   });
+
 
 //  async function getUserIdentifiers() {
 //   // Fetch user data from the database
@@ -58,6 +67,7 @@ User.updateMany({},
 //   .catch((error) => {
 //     console.error(error);
 //   });
+
 
 //This added mongoDb ObjectId to the pre-exisiting User fields
 async function assignObjectIdsToUsers() {
@@ -80,6 +90,7 @@ async function assignObjectIdsToUsers() {
 // Call the function to start the process
 assignObjectIdsToUsers();
 
+
 //router.get
 router.get('/login/', async (req, res) => {
   const userId = req.params._id;
@@ -99,6 +110,7 @@ router.get('/login/', async (req, res) => {
   return res.status(200).json({ user });
 });
 
+
 // Get a single user
 router.get("/:id", async (req, res) => {
   try {
@@ -110,6 +122,7 @@ router.get("/:id", async (req, res) => {
     res.status(500).json(err);
   }
 });
+
 
 //Get a single user by username
 router.get(`/get-user/:username`, async (req, res) => {
@@ -139,6 +152,7 @@ router.get(`/get-user/:username`, async (req, res) => {
 //   return res.status(200).json({ user });
 // });
 
+
 //Follow a user
 router.put('/follow-user', async (req, res) => {
   const userToBeFollowed = req.body.usersId;
@@ -160,16 +174,16 @@ router.put('/follow-user', async (req, res) => {
     profilePic: req.body.userToAddToProfilePic,
     usersId: req.body.usersId,
   }
-console.log(userToAddToDetails, "userToAddToDetails");
+  console.log(userToAddToDetails, "userToAddToDetails");
   try {
     userToAddTo = await User.findByIdAndUpdate(userToBeFollowed, {
-    $push: {followers: currentUserDetails},
+      $push: { followers: currentUserDetails },
     })
 
     existingUser = await User.findByIdAndUpdate(currentUser, {
-    $push: {following: userToAddToDetails}
+      $push: { following: userToAddToDetails }
     })
-      // Create a notification message
+    // Create a notification message
     const notificationMessage = "followed you";
     // Create a notification object with the message and userDetails
     const notification = {
@@ -186,10 +200,11 @@ console.log(userToAddToDetails, "userToAddToDetails");
   } catch (err) { console.log(err) }
   
   if (!userToAddTo && !existingUser) {
-    return res.status(500).json({message: "Unable to Follow this user"})
+    return res.status(500).json({ message: "Unable to Follow this user" })
   }
-  return res.status(200).json({message: "Successfully Followed"})
-})
+  return res.status(200).json({ message: "Successfully Followed" })
+});
+
 
 //UnFolllow a User
 router.put('/unfollow-user', async (req, res) => { 
@@ -239,6 +254,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+
 //Get all a users notifications
 router.get("/:id/get-notifications", async (req, res) => {
   const userId = req.params.id;
@@ -257,6 +273,7 @@ router.get("/:id/get-notifications", async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 });
+
 
 router.put("/clear-notifications/clear", async (req, res) => {
   try {
@@ -328,6 +345,7 @@ router.put("/clear-notifications/clear", async (req, res) => {
 //     res.status(400).json({ message: "userId does not match" });
 //   }
 // });
+
 
 //Get All Users
 router.get("/", async (req, res) => {

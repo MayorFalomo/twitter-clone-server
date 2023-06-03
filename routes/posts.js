@@ -250,29 +250,29 @@ router.put("/un-retweet", async (req, res) => {
 });
 
 //Give all existing users a userId
-const updateUserIdInPosts = async () => {
-  try {
-    const posts = await Post.find({}); // Fetch all posts
+// const updateUserIdInPosts = async () => {
+//   try {
+//     const posts = await Post.find({}); // Fetch all posts
 
-    for (const post of posts) {
-      const username = post.username;
+//     for (const post of posts) {
+//       const username = post.username;
 
-      // Find the associated user and get the _id
-      const user = await User.findOne({ username });
-      if (user) {
-        const userId = user.usersId;
-       post.userId = userId;
-        await post.save();
-      }
-    }
+//       // Find the associated user and get the _id
+//       const user = await User.findOne({ username });
+//       if (user) {
+//         const userId = user.usersId;
+//        post.userId = userId;
+//         await post.save();
+//       }
+//     }
 
-    console.log('userId field updated in all posts successfully.');
-  } catch (error) {
-    console.error('Error updating userId field in posts:', error);
-  }
-};
+//     console.log('userId field updated in all posts successfully.');
+//   } catch (error) {
+//     console.error('Error updating userId field in posts:', error);
+//   }
+// };
 
-updateUserIdInPosts();
+// updateUserIdInPosts();
 
 // const updateProfileDpInPosts = async () => {
 //   try {
@@ -306,31 +306,31 @@ updateUserIdInPosts();
 
 // updateProfileDpInPosts();
 
-const updateProfileDpInPosts = async () => {
-  try {
-    const posts = await Post.find(); // Fetch all posts
+// const updateProfileDpInPosts = async () => {
+//   try {
+//     const posts = await Post.find(); // Fetch all posts
 
-    for (const post of posts) {
-      const username = post.username;
+//     for (const post of posts) {
+//       const username = post.username;
 
-      // Find the associated user and get the current profilePic
-      const user = await User.findOne({ username });
-      const profilePic = user.profilePic;
+//       // Find the associated user and get the current profilePic
+//       const user = await User.findOne({ username });
+//       const profilePic = user.profilePic;
 
-      // Update the profileDp field in the post
-      post.profileDp = profilePic;
-      // console.log(post.profileDp, "this is profileDp");
-      // console.log(profilePic, "This is profilePic");
-      await post.save();
-    }
+//       // Update the profileDp field in the post
+//       post.profileDp = profilePic;
+//       // console.log(post.profileDp, "this is profileDp");
+//       // console.log(profilePic, "This is profilePic");
+//       await post.save();
+//     }
 
-    console.log('ProfileDp field updated in all posts successfully.');
-  } catch (error) {
-    console.error('Error updating profileDp field in posts:', error);
-  }
-};
+//     console.log('ProfileDp field updated in all posts successfully.');
+//   } catch (error) {
+//     console.error('Error updating profileDp field in posts:', error);
+//   }
+// };
 
-updateProfileDpInPosts();
+// updateProfileDpInPosts();
 
 //Comment On A Tweet
 router.put("/comments", async (req, res) => {
@@ -740,18 +740,26 @@ router.get(`/:id/:newId`, async (req, res) => {
   return res.status(200).json({ comments });
 })
 
+const PAGE_SIZE = 10  // Number of posts to retrieve per page
 //GET all posts
-//Step 1: Get username and catName from req.query.user
-//Step 2: Let posts be anything, meaning it could be anything
-//Step 3: If it's username, find username in Post and assign it to posts which could be anything
-//step 4: Else if there's no username let's find categories then we use the $in method to say (if it's inside) that's our catName
 router.get("/", async (req, res) => {
   try {
-    let posts;
-    posts = await Post.find({});
-    // posts = await Post.find().populate("user profileDp");
-    // console.log(posts);
-    res.status(200).json(posts);
+    const { page } = req.query // Retrieve the page number from the query string
+    const pageNumber = parseInt(page) || 1 // Convert the page number to an integer, default to 1 if not provided
+
+    const totalTweets = await Post.find({}).countDocuments();  // Get the total number of posts
+    console.log(totalTweets, "total tweets");
+    const totalPages = Math.ceil(totalTweets / PAGE_SIZE) // Calculate the total number of pages
+    console.log(totalPages, "Totalpages");
+    const posts = await Post.find({})
+      .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
+      .skip((pageNumber - 1) * PAGE_SIZE)   // Skip posts based on the page number and page size
+      .limit(PAGE_SIZE) // Limit the number of posts retrieved per page
+      .exec();
+    res.status(200).json({posts, totalPages, currentPage: pageNumber});
+    // let posts;
+    // posts = await Post.find({});
+    // res.status(200).json(posts); 
   } catch (err) {
     res.status(500).json(err);
   }

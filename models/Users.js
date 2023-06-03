@@ -13,7 +13,7 @@ const UserSchema = new mongoose.Schema(
     },
     profilePic: {
       type: String,
-      required: true,
+      required: false,
     },
     coverPhoto: {
       type: String,
@@ -69,7 +69,7 @@ const UserSchema = new mongoose.Schema(
     },
     usersId: {
       type: String,
-      required: true,
+      required: false,
     },
   },
   { timestamps: true }
@@ -78,11 +78,13 @@ const UserSchema = new mongoose.Schema(
 UserSchema.pre('save', async function (next) {
   try {
     // Find all posts associated with this user
-    const posts = await mongoose.model('Post').find({ user: this.usersId });
-
+    const posts = await mongoose.model('Post').find({ user: this.userId });
+    // console.log(posts, "this is posts in user model");
     // Update the profileDp field in each post
     for (const post of posts) {
       post.profileDp = this.usersId;
+      // console.log(post.profileDp, "this is profileDp");
+      // console.log(this.usersId, "this is usersId");
       await post.save();
     }
     next();
