@@ -274,24 +274,52 @@ router.put("/un-retweet", async (req, res) => {
 
 // updateUserIdInPosts();
 
+const updateProfileDpInPosts = async () => {
+  try {
+    const posts = await Post.find(); // Fetch all posts
+
+    for (const post of posts) {
+      const username = post.username;
+
+      // Find the associated user and get the current profilePic
+      const user = await User.findOne({ username });
+      // console.log(user);
+      if (user) {
+        const profilePic = user.profilePic;
+       
+        post.profileDp = profilePic;
+        //  console.log(profilePic, "this is user ProfilePic");
+        // console.log(post.profileDp, "post profileDp")
+        await post.save();
+      }
+    }
+
+    console.log('ProfileDp field updated in all posts successfully.');
+  } catch (error) {
+    console.error('Error updating profileDp field in posts:', error);
+  }
+};
+
+updateProfileDpInPosts();
+
 // const updateProfileDpInPosts = async () => {
 //   try {
 //     const posts = await Post.find(); // Fetch all posts
 
 //     for (const post of posts) {
-//       console.log(post, "This is post");
+//       // console.log(post, "This is post");
 
 //       const username = post.username;
 //       console.log(username, "This is userId");
 
 //       // Find the associated user and get the current profilePic
 //       const user = await User.findOne({ username });
-//       console.log(user, "This is user");
+//       // console.log(user, "This is user");
 //       const profilePic = user.profilePic;
-
+//       console.log(user.profilePic, "user profilePic");
 //       // Update the profileDp field in the post
 //       post.profileDp = profilePic;
-
+//       console.log(post.profileDp, "profileDp");
 //       //An alternative way to update the profileDp
 //       // const profilePic = user.profilePic;
 //       // post.profileDp = profilePic;
@@ -748,9 +776,9 @@ router.get("/", async (req, res) => {
     const pageNumber = parseInt(page) || 1 // Convert the page number to an integer, default to 1 if not provided
 
     const totalTweets = await Post.find({}).countDocuments();  // Get the total number of posts
-    console.log(totalTweets, "total tweets");
+    // console.log(totalTweets, "total tweets");
     const totalPages = Math.ceil(totalTweets / PAGE_SIZE) // Calculate the total number of pages
-    console.log(totalPages, "Totalpages");
+    // console.log(totalPages, "Totalpages");
     const posts = await Post.find({})
       .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
       .skip((pageNumber - 1) * PAGE_SIZE)   // Skip posts based on the page number and page size

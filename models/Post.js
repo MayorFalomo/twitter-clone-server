@@ -68,11 +68,6 @@ const TweetSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-  //     user: {
-  //   type: mongoose.Schema.Types.ObjectId,
-  //   ref: 'User',
-  //   required: false,
-  // },
   },
   { timestamps: true }
 );

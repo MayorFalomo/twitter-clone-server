@@ -14,6 +14,7 @@ const UserSchema = new mongoose.Schema(
     profilePic: {
       type: String,
       required: false,
+      default: "https://i.pinimg.com/564x/33/f4/d8/33f4d8c6de4d69b21652512cbc30bb05.jpg",
     },
     coverPhoto: {
       type: String,
@@ -75,16 +76,14 @@ const UserSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+//This middleware would get the Post model from mongoose and find the users profilePic then store everything in posts variable
+//Once this is done we map through the post and then makes the users current ProfilePic and profileDp the same
 UserSchema.pre('save', async function (next) {
   try {
     // Find all posts associated with this user
-    const posts = await mongoose.model('Post').find({ user: this.userId });
-    // console.log(posts, "this is posts in user model");
-    // Update the profileDp field in each post
+    const posts = await mongoose.model('Post').find({ user: this.profilePic });
     for (const post of posts) {
-      post.profileDp = this.usersId;
-      // console.log(post.profileDp, "this is profileDp");
-      // console.log(this.usersId, "this is usersId");
+      post.profileDp = this.profilePic;
       await post.save();
     }
     next();
