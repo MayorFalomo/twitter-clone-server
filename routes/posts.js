@@ -14,6 +14,17 @@ router.post("/", async (req, res) => {
   }
 });
 
+//route to Search for tweets
+router.get("/search", async (req, res) => {
+  const searchQuery = req.query.query;
+  try {
+    const foundTweets = await Post.find({ tweet: { $regex: searchQuery, $options: 'i' } });
+    res.json(foundTweets)
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: 'An error occurred while searching for tweets.' });
+  }
+});
 // router.post("/", async (req, res) => {
 //   try {
 //     const { userId, username, profileDp, tweet, usersAt, video, picture, likes, retweet, followers, } = req.body;
