@@ -467,7 +467,6 @@ router.put("/quote-tweet", async (req, res) => {
   // const postId = req.body._id;
   let post;
   let user;
-  // console.log(req.body._id, "This is postID");
 
   const userDetails = {
     username: req.body.username, //This is the important bit
@@ -759,7 +758,6 @@ router.put("/:id/:newId/replies-comments", async (req, res) => {
   if (!post) {
     return res.status(404).json({ message: "Can't Comment On This Post" });
   }
-  // console.log(post);
   return res.status(200).json({ message: "Successfully Commented on a Post" });
 });
 
@@ -787,15 +785,13 @@ router.get("/", async (req, res) => {
     const pageNumber = parseInt(page) || 1 // Convert the page number to an integer, default to 1 if not provided
 
     const totalTweets = await Post.find({}).countDocuments();  // Get the total number of posts
-    // console.log(totalTweets, "total tweets");
     const totalPages = Math.ceil(totalTweets / PAGE_SIZE) // Calculate the total number of pages
-    // console.log(totalPages, "Totalpages");
     const posts = await Post.find({})
       .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
       .skip((pageNumber - 1) * PAGE_SIZE)   // Skip posts based on the page number and page size
       .limit(PAGE_SIZE) // Limit the number of posts retrieved per page
       .exec();
-    res.status(200).json({posts, totalPages, currentPage: pageNumber});
+    res.status(200).json(posts)
     // let posts;
     // posts = await Post.find({});
     // res.status(200).json(posts); 
