@@ -378,8 +378,8 @@ router.put("/comments", async (req, res) => {
   // console.log(req.body._id, "This is postID");
 
   const userDetails = {
-    username: req.body.username,
-    currentUsername: req.body.currentUsername,
+    username: req.body.username, 
+    currentUsername: req.body.currentUsername, //This is the actual
     profileDp: req.body.profileDp,
     comments: req.body.comments,
     usersAt: req.body.usersAt,
@@ -501,7 +501,7 @@ router.put("/quote-tweet", async (req, res) => {
     };
     // Find the user whose post was liked and push the notification object into their notifications array
     user = await User.findOneAndUpdate(
-      { username: userDetails.username },
+      { username: userDetails.currentUsername },
       { $push: { notifications: notification } }
     );
   } catch (err) {
