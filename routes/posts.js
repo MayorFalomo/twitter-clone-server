@@ -7,7 +7,6 @@ router.post("/", async (req, res) => {
   const newPost = new Post(req.body);
   try {
     const savedPost = await newPost.save();
-    // console.log(savedPost);
     res.status(200).json(savedPost);
   } catch (err) {
     res.status(500).json(err);
@@ -380,6 +379,7 @@ router.put("/comments", async (req, res) => {
 
   const userDetails = {
     username: req.body.username,
+    currentUsername: req.body.currentUsername,
     profileDp: req.body.profileDp,
     comments: req.body.comments,
     usersAt: req.body.usersAt,
@@ -412,7 +412,7 @@ router.put("/comments", async (req, res) => {
     // console.log(notification, "notifications");
     // Find the user whose post was liked and push the notification object into their notifications array
     user = await User.findOneAndUpdate(
-      { username: userDetails.username },
+      { username: userDetails.currentUsername },
       { $push: { notifications: notification } }
     );
   } catch (err) {
@@ -421,7 +421,7 @@ router.put("/comments", async (req, res) => {
   if (!post) {
     return res.status(404).json({ message: "Can't Comment On This Post" });
   }
-  console.log(post);
+  // console.log(post);
   return res.status(200).json({ message: "Successfully Commented on a Post" });
 });
 
