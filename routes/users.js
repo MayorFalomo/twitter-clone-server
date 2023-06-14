@@ -92,13 +92,14 @@ assignObjectIdsToUsers();
 
 
 //router.get
-router.get('/login/', async (req, res) => {
-  const userId = req.params._id;
+router.post('/login/', async (req, res) => {
+  const userId = req.body.userId;
   
   let user;
 
   try {
-    user = await User.findById(userId, "_id");
+    user = await User.findById(userId);
+    // console.log(user);
   } catch (error) {
     return res.status(404).json({ message: "Something went wrong." });
   }
@@ -106,7 +107,6 @@ router.get('/login/', async (req, res) => {
   if (!user) {
     return res.status(404).json({ message: "User Not Found" });
   }
-
   return res.status(200).json({ user });
 });
 
@@ -167,14 +167,14 @@ router.put('/follow-user', async (req, res) => {
     profileDp: req.body.currentProfileDp,
     userId: req.body.currentUserId,
   }
-  console.log(currentUserDetails, "currentUserDetails");
+  // console.log(currentUserDetails, "currentUserDetails");
   const userToAddToDetails = {
     name: req.body.userToAddToName,
     userAt: req.body.userToAddToAt, //This is a list of userIds. This is a list of usernames
     profilePic: req.body.userToAddToProfilePic,
     usersId: req.body.usersId,
   }
-  console.log(userToAddToDetails, "userToAddToDetails");
+  // console.log(userToAddToDetails, "userToAddToDetails");
   try {
     userToAddTo = await User.findByIdAndUpdate(userToBeFollowed, {
       $push: { followers: currentUserDetails },
