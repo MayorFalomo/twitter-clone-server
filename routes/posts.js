@@ -120,10 +120,9 @@ router.put("/liketweet", async (req, res) => {
       message: notificationMessage,
       ...userDetails,
     };
-    // console.log(notification, "notifications");
     // Find the user whose post was liked and push the notification object into their notifications array
     user = await User.findOneAndUpdate(
-      { username: userDetails.currentUserName },
+      { username: userDetails.userName },
       { $push: { notifications: notification } }
     );
 
