@@ -780,20 +780,20 @@ const PAGE_SIZE = 10  // Number of posts to retrieve per page
 //GET all posts
 router.get("/", async (req, res) => {
   try {
-    const { page } = req.query // Retrieve the page number from the query string
-    const pageNumber = parseInt(page) || 1 // Convert the page number to an integer, default to 1 if not provided
+    // const { page } = req.query // Retrieve the page number from the query string
+    // const pageNumber = parseInt(page) || 1 // Convert the page number to an integer, default to 1 if not provided
 
-    const totalTweets = await Post.find({}).countDocuments();  // Get the total number of posts
-    const totalPages = Math.ceil(totalTweets / PAGE_SIZE) // Calculate the total number of pages
-    const posts = await Post.find({})
-      .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
-      .skip((pageNumber - 1) * PAGE_SIZE)   // Skip posts based on the page number and page size
-      .limit(PAGE_SIZE) // Limit the number of posts retrieved per page
-      .exec();
-    res.status(200).json(posts)
-    // let posts;
-    // posts = await Post.find({});
-    // res.status(200).json(posts); 
+    // const totalTweets = await Post.find({}).countDocuments();  // Get the total number of posts
+    // const totalPages = Math.ceil(totalTweets / PAGE_SIZE) // Calculate the total number of pages
+    // const posts = await Post.find({})
+    //   .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
+    //   .skip((pageNumber - 1) * PAGE_SIZE)   // Skip posts based on the page number and page size
+    //   .limit(PAGE_SIZE) // Limit the number of posts retrieved per page
+    //   .exec();
+    // res.status(200).json(posts)
+    let posts;
+    posts = await Post.find({});
+    res.status(200).json(posts); 
   } catch (err) {
     res.status(500).json(err);
   }
