@@ -1,6 +1,6 @@
 const User = require("../models/Users");
 const router = require("express").Router();
-const Post = require("../models/Post"); 
+const Post = require("../models/Post");
 const mongoose = require("mongoose");
 
 //register a new user
@@ -9,7 +9,7 @@ router.post("/register", async (req, res) => {
     //Since we imported User from our User schema component here is where we expect our information to be created for new user hence for example username: request.body(A method).username and so forth
     //This is the object we're directly pushing to mongoDb, we get the request from the frontEnd
     const newUser = new User({
-      _id: req.body.id, 	//_id is a required field for user to be able to connect to db
+      _id: req.body.id, //_id is a required field for user to be able to connect to db
       // userId: req.body.userId,
       username: req.body.username,
       email: req.body.email,
@@ -36,7 +36,6 @@ router.post("/register", async (req, res) => {
   }
 });
 
-
 //Added retweeted Arrray to all the users at once
 // User.updateMany({},
 //   { $set: { retweeted: [] } }
@@ -47,7 +46,6 @@ router.post("/register", async (req, res) => {
 //   .catch((err) => {
 //     console.log("Error updating retweeted array for users:", err);
 //   });
-
 
 //  async function getUserIdentifiers() {
 //   // Fetch user data from the database
@@ -67,7 +65,6 @@ router.post("/register", async (req, res) => {
 //   .catch((error) => {
 //     console.error(error);
 //   });
-
 
 //This added mongoDb ObjectId to the pre-exisiting User fields
 async function assignObjectIdsToUsers() {
@@ -90,11 +87,10 @@ async function assignObjectIdsToUsers() {
 // Call the function to start the process
 assignObjectIdsToUsers();
 
-
 //router.get
-router.post('/login/', async (req, res) => {
+router.post("/login/", async (req, res) => {
   const userId = req.body.userId;
-  
+
   let user;
 
   try {
@@ -110,7 +106,6 @@ router.post('/login/', async (req, res) => {
   return res.status(200).json({ user });
 });
 
-
 // Get a single user
 router.get("/:id", async (req, res) => {
   try {
@@ -122,7 +117,6 @@ router.get("/:id", async (req, res) => {
     res.status(500).json(err);
   }
 });
-
 
 //Get a single user by username
 router.get(`/get-user/:username`, async (req, res) => {
@@ -152,9 +146,8 @@ router.get(`/get-user/:username`, async (req, res) => {
 //   return res.status(200).json({ user });
 // });
 
-
 //Follow a user
-router.put('/follow-user', async (req, res) => {
+router.put("/follow-user", async (req, res) => {
   const userToBeFollowed = req.body.usersId;
   const currentUser = req.body.currentUserId;
 
@@ -166,23 +159,23 @@ router.put('/follow-user', async (req, res) => {
     usersAt: req.body.currentUsersAt,
     profileDp: req.body.currentProfileDp,
     userId: req.body.currentUserId,
-  }
+  };
   // console.log(currentUserDetails, "currentUserDetails");
   const userToAddToDetails = {
     name: req.body.userToAddToName,
     userAt: req.body.userToAddToAt, //This is a list of userIds. This is a list of usernames
     profilePic: req.body.userToAddToProfilePic,
     usersId: req.body.usersId,
-  }
+  };
   // console.log(userToAddToDetails, "userToAddToDetails");
   try {
     userToAddTo = await User.findByIdAndUpdate(userToBeFollowed, {
       $push: { followers: currentUserDetails },
-    })
+    });
 
     existingUser = await User.findByIdAndUpdate(currentUser, {
-      $push: { following: userToAddToDetails }
-    })
+      $push: { following: userToAddToDetails },
+    });
     // Create a notification message
     const notificationMessage = "followed you";
     // Create a notification object with the message and userDetails
@@ -196,18 +189,18 @@ router.put('/follow-user', async (req, res) => {
       { username: userToAddToDetails.name },
       { $push: { notifications: notification } }
     );
-
-  } catch (err) { console.log(err) }
-  
-  if (!userToAddTo && !existingUser) {
-    return res.status(500).json({ message: "Unable to Follow this user" })
+  } catch (err) {
+    console.log(err);
   }
-  return res.status(200).json({ message: "Successfully Followed" })
+
+  if (!userToAddTo && !existingUser) {
+    return res.status(500).json({ message: "Unable to Follow this user" });
+  }
+  return res.status(200).json({ message: "Successfully Followed" });
 });
 
-
 //UnFolllow a User
-router.put('/unfollow-user', async (req, res) => { 
+router.put("/unfollow-user", async (req, res) => {
   const userToBeUnfollowed = req.body.userToBeUnfollowed;
   const currentUser = req.body.currentUser;
 
@@ -217,35 +210,34 @@ router.put('/unfollow-user', async (req, res) => {
   try {
     //remove the current User from the person you followed
     userToRemoveFrom = await User.findByIdAndUpdate(userToBeUnfollowed, {
-      $pull: {followers: {currentUserId: currentUser}},
-    })
+      $pull: { followers: { currentUserId: currentUser } },
+    });
     //remove the user you followed from the existing user
     existingUser = await User.findByIdAndUpdate(currentUser, {
       $pull: {
-        following: { usersId: userToBeUnfollowed }
+        following: { usersId: userToBeUnfollowed },
       },
-    })
+    });
   } catch (error) {
-    return res.status(500).json({message: error})
+    return res.status(500).json({ message: error });
   }
 
   if (!userToRemoveFrom && !existingUser) {
-    return res.status(500).json({message: "Unable to Follow"})
+    return res.status(500).json({ message: "Unable to Follow" });
   }
-  return res.status(200).json({message: "Successfully Unfollowed this user"})
-})
-
+  return res.status(200).json({ message: "Successfully Unfollowed this user" });
+});
 
 //Update user details
 router.put("/:id", async (req, res) => {
   if (req.body.userId == req.params.id) {
     try {
-      const updatedUser = await User.findByIdAndUpdate(
+      const updatedNote = await User.findByIdAndUpdate(
         req.params.id,
         { $set: req.body },
         { new: true } //When this line is added whatever you update shows immediately in postman
       );
-      res.status(200).json(updatedUser);
+      res.status(200).json(updatedNote);
     } catch (err) {
       res.status(500).json(err);
     }
@@ -253,7 +245,6 @@ router.put("/:id", async (req, res) => {
     res.status(400).json({ message: "userId does not match" });
   }
 });
-
 
 //Get all a users notifications
 router.get("/:id/get-notifications", async (req, res) => {
@@ -274,12 +265,11 @@ router.get("/:id/get-notifications", async (req, res) => {
   }
 });
 
-
 router.put("/clear-notifications/clear", async (req, res) => {
   try {
     const { id } = req.body;
-    
-    if (!id || id.trim() === '') {
+
+    if (!id || id.trim() === "") {
       return res.status(400).json({ message: "Invalid ID" });
     }
 
@@ -291,7 +281,7 @@ router.put("/clear-notifications/clear", async (req, res) => {
     }
 
     user.notifications = [];
-    user.markModified('notifications');
+    user.markModified("notifications");
     console.log(user.notifications);
     await user.save();
     return res.json(user.notifications);
@@ -300,7 +290,6 @@ router.put("/clear-notifications/clear", async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 });
-
 
 //Route for notifications to empty when opened
 // router.put("/:id/clear-notifications", async (req, res) => {
@@ -328,7 +317,6 @@ router.put("/clear-notifications/clear", async (req, res) => {
 //   // }
 // });
 
-
 // router.put("/:username", async (req, res) => {
 //   if (req.body.username == req.params.username) {
 //     try {
@@ -346,7 +334,6 @@ router.put("/clear-notifications/clear", async (req, res) => {
 //   }
 // });
 
-
 //Get All Users
 router.get("/", async (req, res) => {
   try {
@@ -357,7 +344,15 @@ router.get("/", async (req, res) => {
   }
 });
 
-
-
+//Count all the users
+router.get("/count", async (req, res) => {
+  try {
+    const user = await User.find({}).count();
+    console.log(`Total number of users: ${user}`);
+    res.status(200).json({ message: `Total number of users: ${user}` });
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
 
 module.exports = router;
