@@ -67,25 +67,25 @@ router.post("/register", async (req, res) => {
 //   });
 
 //This added mongoDb ObjectId to the pre-exisiting User fields
-// async function assignObjectIdsToUsers() {
-//   try {
-//     const users = await User.find({}); // Fetch all users
+async function assignObjectIdsToUsers() {
+  try {
+    const users = await User.find({}); // Fetch all users
 
-//     for (const user of users) {
-//       user.usersId = new mongoose.Types.ObjectId(); // Generate a new ObjectId
-//       // console.log(user.usersId);
+    for (const user of users) {
+      user.usersId = new mongoose.Types.ObjectId(); // Generate a new ObjectId
+      // console.log(user.usersId);
 
-//       await user.save(); // Save the updated user
-//     }
+      await user.save(); // Save the updated user
+    }
 
-//     console.log("ObjectIds assigned to users successfully.");
-//   } catch (error) {
-//     console.error("Error assigning ObjectIds to users:", error);
-//   }
-// }
+    console.log("ObjectIds assigned to users successfully.");
+  } catch (error) {
+    console.error("Error assigning ObjectIds to users:", error);
+  }
+}
 
-// // Call the function to start the process
-// assignObjectIdsToUsers();
+// Call the function to start the process
+assignObjectIdsToUsers();
 
 //router.get
 router.post("/login/", async (req, res) => {
@@ -347,7 +347,7 @@ router.get("/", async (req, res) => {
 // async function countAllUsers() {
 router.get("/count", async (req, res) => {
   try {
-    const user = await User.find({}).countDocuments();
+    const user = await User.find({}).countDocuments({});
     console.log(`Total number of users: ${user}`);
     res.status(200).json({ message: `Total number of users: ${user}` });
   } catch (error) {
