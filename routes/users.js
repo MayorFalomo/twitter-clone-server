@@ -265,6 +265,7 @@ router.get("/:id/get-notifications", async (req, res) => {
   }
 });
 
+//Route to clear notifications
 router.put("/clear-notifications/clear", async (req, res) => {
   try {
     const { id } = req.body;
@@ -274,7 +275,7 @@ router.put("/clear-notifications/clear", async (req, res) => {
     }
 
     const user = await User.findById(id);
-    console.log(user, "this is user");
+    // console.log(user, "this is user");
 
     if (!user) {
       return res.status(404).json({ message: "User Not Found" });
