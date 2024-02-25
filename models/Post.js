@@ -59,10 +59,6 @@ const TweetSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
-    // newId: {
-    //   type: String,
-    //   required: false,
-    // },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -71,6 +67,5 @@ const TweetSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
 
 module.exports = mongoose.model("Post", TweetSchema);

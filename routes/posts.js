@@ -17,11 +17,15 @@ router.post("/", async (req, res) => {
 router.get("/search", async (req, res) => {
   const searchQuery = req.query.query;
   try {
-    const foundTweets = await Post.find({ tweet: { $regex: searchQuery, $options: 'i' } });
-    res.json(foundTweets)
+    const foundTweets = await Post.find({
+      tweet: { $regex: searchQuery, $options: "i" },
+    });
+    res.json(foundTweets);
   } catch (err) {
     console.log(err);
-    res.status(500).json({ error: 'An error occurred while searching for tweets.' });
+    res
+      .status(500)
+      .json({ error: "An error occurred while searching for tweets." });
   }
 });
 // router.post("/", async (req, res) => {
@@ -91,7 +95,7 @@ router.get("/search", async (req, res) => {
 //   .catch((err) => {
 //     console.log("Error updating profileDp field in posts:", err);
 //   });
-  
+
 //Like a tweet
 router.put("/liketweet", async (req, res) => {
   let post;
@@ -113,7 +117,7 @@ router.put("/liketweet", async (req, res) => {
       $push: { likes: userDetails },
       // $push: { User: {notifications: userDetails}}
     });
-      // Create a notification message
+    // Create a notification message
     const notificationMessage = "liked your tweet";
     // Create a notification object with the message and userDetails
     const notification = {
@@ -125,7 +129,6 @@ router.put("/liketweet", async (req, res) => {
       { username: userDetails.username },
       { $push: { notifications: notification } }
     );
-
   } catch (err) {
     console.log(err);
   }
@@ -134,7 +137,6 @@ router.put("/liketweet", async (req, res) => {
   }
   return res.status(200).json({ message: "You have liked this post" });
 });
-
 
 // //Like a tweet comment
 // router.put("/comment-liketweet", async (req, res) => {
@@ -163,8 +165,6 @@ router.put("/liketweet", async (req, res) => {
 //   return res.status(200).json({ message: "You just liked this comment" });
 // });
 
-
-
 //Unlike a Tweet
 router.put("/unlike-tweet", async (req, res) => {
   let post;
@@ -174,9 +174,8 @@ router.put("/unlike-tweet", async (req, res) => {
     // Find the tweet by its ID and pull the object from the likes array with the given username
     post = await Post.findByIdAndUpdate(req.body.id, {
       //pull the object with username provided that is the same with the currentUserName from the likes array
-      $pull: { likes: { currentUserName: username } }
+      $pull: { likes: { currentUserName: username } },
     });
-
   } catch (err) {
     console.log(err);
   }
@@ -187,7 +186,6 @@ router.put("/unlike-tweet", async (req, res) => {
 
   return res.status(200).json({ message: "You have unliked this post" });
 });
-
 
 //Retweet a tweet
 router.put("/retweet-tweet", async (req, res) => {
@@ -216,10 +214,10 @@ router.put("/retweet-tweet", async (req, res) => {
       message: notificationMessage,
       ...userDetails,
     };
-     // Push the retweeted tweet to the Post array of the currentUserName since i want that user to have it in he's post array
+    // Push the retweeted tweet to the Post array of the currentUserName since i want that user to have it in he's post array
     retweet = await User.findOneAndUpdate(
       { username: userDetails.currentUserName },
-      { $push: {retweeted: userDetails } }
+      { $push: { retweeted: userDetails } }
     );
 
     // Find the user whose post was liked and push the notification object into their notifications array
@@ -227,8 +225,6 @@ router.put("/retweet-tweet", async (req, res) => {
       { username: userDetails.username },
       { $push: { notifications: notification } }
     );
-    
-    
   } catch (err) {
     console.log(err);
   }
@@ -243,10 +239,9 @@ router.put("/un-retweet", async (req, res) => {
   let unRetweet;
   const username = req.body.username;
   try {
-    unRetweet = await Post.findByIdAndUpdate(
-      req.body.id,
-      { $pull: { retweet: {currentUserName: username} } },
-    );
+    unRetweet = await Post.findByIdAndUpdate(req.body.id, {
+      $pull: { retweet: { currentUserName: username } },
+    });
   } catch (err) {
     ("");
     console.log(err);
@@ -295,7 +290,7 @@ const updateProfileDpInPosts = async () => {
       // console.log(user);
       if (user) {
         const profilePic = user.profilePic;
-       
+
         post.profileDp = profilePic;
         //  console.log(profilePic, "this is user ProfilePic");
         // console.log(post.profileDp, "post profileDp")
@@ -303,9 +298,9 @@ const updateProfileDpInPosts = async () => {
       }
     }
 
-    console.log('ProfileDp field updated in all posts successfully.');
+    console.log("ProfileDp field updated in all posts successfully.");
   } catch (error) {
-    console.error('Error updating profileDp field in posts:', error);
+    console.error("Error updating profileDp field in posts:", error);
   }
 };
 
@@ -377,14 +372,14 @@ router.put("/comments", async (req, res) => {
   // console.log(req.body._id, "This is postID");
 
   const userDetails = {
-    username: req.body.username, 
+    username: req.body.username,
     currentUsername: req.body.currentUsername, //This is the actual
     profileDp: req.body.profileDp,
     comments: req.body.comments,
     usersAt: req.body.usersAt,
     picture: req.body.picture,
     video: req.body.video,
-      likes: req.body.likes,
+    likes: req.body.likes,
     retweet: req.body.retweet,
     _id: req.body.id,
     comment: req.body.comment,
@@ -398,10 +393,10 @@ router.put("/comments", async (req, res) => {
         _id: req.body.id,
       },
       {
-        $push: { comments:  userDetails },
+        $push: { comments: userDetails },
       }
     );
-      // Create a notification message
+    // Create a notification message
     const notificationMessage = "commented on your tweet";
     // Create a notification object with the message and userDetails
     const notification = {
@@ -460,7 +455,6 @@ router.put("/comments", async (req, res) => {
 //   return res.status(200).json({ message: "Successfully Commented on a Post" });
 // });
 
-
 //Quoted Replies
 router.put("/quote-tweet", async (req, res) => {
   // const postId = req.body._id;
@@ -479,7 +473,6 @@ router.put("/quote-tweet", async (req, res) => {
     newId: req.body.newId,
     currentUsername: req.body.currentUsername,
     createdAt: Date.now(), // Add the createdAt timestamp
-
   };
 
   try {
@@ -512,7 +505,6 @@ router.put("/quote-tweet", async (req, res) => {
   console.log(post);
   return res.status(200).json({ message: "Successfully Quoted this tweet" });
 });
-
 
 //UPDATE POST - Update all of users post, using the put method, we get the id of what we are updating, we use the post id to update the post
 router.put("/:id", async (req, res) => {
@@ -569,6 +561,7 @@ router.get("/:id", async (req, res) => {
     res.status(500).json(err);
   }
 });
+
 //GET a singlePOST
 router.get("/:userid", async (req, res) => {
   try {
@@ -595,8 +588,6 @@ router.get("/:userid", async (req, res) => {
 
 //   return res.status(200).json({ post });
 // })
-
-
 
 // find and populate profileDp with profilePic
 // (async () => {
@@ -645,15 +636,14 @@ router.put("/:id/:newId/like-comment", async (req, res) => {
     createdAt: req.body.createdAt,
     likeId: req.body.likeId,
     createdAt: Date.now(),
-
   };
   //Find id in Post and update, then push the userDetails into the likes array
   try {
     post = await Post.findOneAndUpdate(
       { _id: id, "comments.newId": newId },
       {
-        $push: { "comments.$.likes":  userDetails }
-    }
+        $push: { "comments.$.likes": userDetails },
+      }
     );
   } catch (err) {
     console.log(err);
@@ -683,7 +673,7 @@ router.put("/:id/:newId/unlike-comment", async (req, res) => {
     post = await Post.findOneAndUpdate(
       { _id: id, "comments.newId": newId },
       { $pull: { "comments.$.likes": userDetails } },
-      {multi: true }
+      { multi: true }
     );
   } catch (err) {
     console.log(err);
@@ -713,8 +703,8 @@ router.put("/:id/:newId/retweet-comment", async (req, res) => {
     post = await Post.findOneAndUpdate(
       { _id: id, "comments.newId": newId },
       {
-        $push: { "comments.$.retweet":  userDetails }
-    }
+        $push: { "comments.$.retweet": userDetails },
+      }
     );
   } catch (err) {
     console.log(err);
@@ -766,7 +756,10 @@ router.get(`/:id/:newId`, async (req, res) => {
   const newId = req.params.newId;
   let comments;
   try {
-    comments = await Post.find({_id: id, comments: {$elemMatch: {newId: newId}} }, {"comments.$": 1})
+    comments = await Post.find(
+      { _id: id, comments: { $elemMatch: { newId: newId } } },
+      { "comments.$": 1 }
+    );
   } catch (err) {
     res.status(500).json(err);
   }
@@ -774,9 +767,23 @@ router.get(`/:id/:newId`, async (req, res) => {
     return res.status(404).json({ message: "No posts found" });
   }
   return res.status(200).json({ comments });
-})
+});
 
-const PAGE_SIZE = 10  // Number of posts to retrieve per page
+//Get all the post of the people you are following
+router.get("/get-tweet/following", async (req, res) => {
+  const userId = req.params.username;
+  const allUsers = await User.find({});
+
+  // let posts;
+  try {
+    console.log(allUsers, "these are all users");
+    // posts = await Post.find({ username });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+const PAGE_SIZE = 10; // Number of posts to retrieve per page
 //GET all posts
 router.get("/", async (req, res) => {
   try {
@@ -793,10 +800,30 @@ router.get("/", async (req, res) => {
     // res.status(200).json(posts)
     let posts;
     posts = await Post.find({});
-    res.status(200).json(posts); 
+    res.status(200).json(posts);
   } catch (err) {
     res.status(500).json(err);
   }
 });
+
+//Show post of only those  who follow me or I am following them
+router.get("/:username/following-tweets", async (req, res) => {
+  const username = req.params.username;
+  let user;
+  try {
+    console.log(username, "this is params");
+    user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json("User not found");
+    }
+    // const following = user.following.map((following) => following.name);
+    console.log(user, "this is following");
+    res.status(200).json(user);
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+// const posts = await Post.find({ userId: { $in: followingIds } }).populate('userId');
 
 module.exports = router;

@@ -29,7 +29,6 @@ router.post("/register", async (req, res) => {
     // console.log(newUser);
     //Here we assign the newly created user to the user variable and save() which is a mongoose method), Then we say the res.user should come in json file
     const user = await newUser.save();
-    console.log(user, "I am user");
     res.status(200).json(user);
   } catch (err) {
     res.status(500).json(err);
@@ -67,25 +66,25 @@ router.post("/register", async (req, res) => {
 //   });
 
 //This added mongoDb ObjectId to the pre-exisiting User fields
-async function assignObjectIdsToUsers() {
-  try {
-    const users = await User.find({}); // Fetch all users
+// async function assignObjectIdsToUsers() {
+//   try {
+//     const users = await User.find({}); // Fetch all users
 
-    for (const user of users) {
-      user.usersId = new mongoose.Types.ObjectId(); // Generate a new ObjectId
-      // console.log(user.usersId);
+//     for (const user of users) {
+//       user.usersId = new mongoose.Types.ObjectId(); // Generate a new ObjectId
+//       // console.log(user.usersId);
 
-      await user.save(); // Save the updated user
-    }
+//       await user.save(); // Save the updated user
+//     }
 
-    console.log("ObjectIds assigned to users successfully.");
-  } catch (error) {
-    console.error("Error assigning ObjectIds to users:", error);
-  }
-}
+//     console.log("ObjectIds assigned to users successfully.");
+//   } catch (error) {
+//     console.error("Error assigning ObjectIds to users:", error);
+//   }
+// }
 
-// Call the function to start the process
-assignObjectIdsToUsers();
+// // Call the function to start the process
+// assignObjectIdsToUsers();
 
 //router.get
 router.post("/login/", async (req, res) => {
@@ -355,6 +354,105 @@ router.get("/count", async (req, res) => {
     console.error("Error counting users");
   }
 });
+
+//Get all a users followers
+router.get("/:username/get-allfollowers", async (req, res) => {
+  const username = req.params.username;
+  try {
+    const user = await User.findOne({ username });
+    // console.log(username, "This is user");
+
+    if (!user) {
+      return res.status(404).json("User not found");
+    }
+
+    const uniqueUsernames = new Set();
+    const followers = user.followers
+      .filter((follower) => {
+        if (
+          !uniqueUsernames.has(follower.username || follower.currentUserName)
+        ) {
+          uniqueUsernames.add(follower.username || follower.currentUserName);
+          return true;
+        }
+        return false;
+      })
+      .map((follower) => {
+        return {
+          id: follower.userId,
+          usersAt: follower.usersAt,
+          username: follower.username || follower.currentUserName,
+          profileDp: follower.profileDp,
+        };
+      });
+
+    // const followers = await User.find({ _id: { $in: user.followers } });
+    console.log(followers, "this are followers");
+
+    res.status(200).json(followers);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+//Get all a users followers
+router.get("/:username/all-following", async (req, res) => {
+  const username = req.params.username;
+  try {
+    const user = await User.findOne({ username });
+
+    if (!user) {
+      return res.status(404).json("User not found");
+    }
+
+    const uniqueUsernames = new Set();
+    const following = user.following
+      .filter((following) => {
+        if (!uniqueUsernames.has(following.name)) {
+          uniqueUsernames.add(following.name);
+          return true;
+        }
+        return false;
+      })
+      .map((following) => {
+        return {
+          usersId: following.usersId,
+          name: following.name,
+          userAt: following.userAt,
+          profilePic: following.profilePic,
+        };
+      });
+    res.status(200).json(following);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+router.get("/:username/following-tweets", async (req, res) => {
+  const username = req.params.username;
+  let user;
+  try {
+    console.log(username, "this is params");
+    user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json("User not found");
+    }
+
+    const following = user.following.map((following) => following.name);
+    const posts = await Post.find({ username: { $in: following.u } }).populate(
+      "userId"
+    );
+
+    // Get tweet from all the people that this person follows
+
+    // const following = user.following.map((following) => following.name);
+    console.log(user, "this is following");
+    res.status(200).json(posts);
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 // }
 // countAllUsers();
 
