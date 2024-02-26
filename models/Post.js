@@ -64,6 +64,10 @@ const TweetSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    followingTweets: {
+      type: Array,
+      required: false,
+    },
   },
   { timestamps: true }
 );

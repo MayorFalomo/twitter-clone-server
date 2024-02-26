@@ -824,6 +824,15 @@ router.get("/:username/following-tweets", async (req, res) => {
   }
 });
 
+// Update all documents to include the new field
+// Post.updateMany({}, { $set: { followingTweets: [] } })
+//   .then((result) => {
+//     console.log("Documents updated successfully:", result);
+//   })
+//   .catch((err) => {
+//     console.error("Error updating documents:", err);
+//   });
+
 // const posts = await Post.find({ userId: { $in: followingIds } }).populate('userId');
 
 module.exports = router;

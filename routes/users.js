@@ -387,7 +387,7 @@ router.get("/:username/get-allfollowers", async (req, res) => {
       });
 
     // const followers = await User.find({ _id: { $in: user.followers } });
-    console.log(followers, "this are followers");
+    // console.log(followers, "this are followers");
 
     res.status(200).json(followers);
   } catch (error) {
@@ -432,22 +432,22 @@ router.get("/:username/following-tweets", async (req, res) => {
   const username = req.params.username;
   let user;
   try {
-    console.log(username, "this is params");
+    // console.log(username, "this is params");
     user = await User.findOne({ username });
     if (!user) {
       return res.status(404).json("User not found");
     }
+    //following gives me an array of all the people a user is following
+    const followingNames = user.following.map((following) => following.name);
 
-    const following = user.following.map((following) => following.name);
-    const posts = await Post.find({ username: { $in: following.u } }).populate(
-      "userId"
-    );
-
-    // Get tweet from all the people that this person follows
+    //Now i need to find through the post and retrieve the posts each person in the following array
+    const followingPosts = await Post.find({
+      username: { $in: followingNames },
+    });
 
     // const following = user.following.map((following) => following.name);
-    console.log(user, "this is following");
-    res.status(200).json(posts);
+    // console.log(following, "this is following");
+    res.status(200).json(followingPosts);
   } catch (error) {
     console.log(error);
   }
