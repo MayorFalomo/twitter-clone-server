@@ -446,7 +446,7 @@ router.get("/:username/following-tweets", async (req, res) => {
     });
 
     // const following = user.following.map((following) => following.name);
-    // console.log(following, "this is following");
+    console.log(following, "this is following");
     res.status(200).json(followingPosts);
   } catch (error) {
     console.log(error);
