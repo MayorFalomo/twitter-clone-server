@@ -428,6 +428,7 @@ router.get("/:username/all-following", async (req, res) => {
   }
 });
 
+//Get all
 router.get("/:username/following-tweets", async (req, res) => {
   const username = req.params.username;
   let user;
@@ -446,8 +447,7 @@ router.get("/:username/following-tweets", async (req, res) => {
     });
 
     // const following = user.following.map((following) => following.name);
-    console.log(following, "this is following");
-    res.status(200).json(followingPosts);
+    return res.status(200).json(followingPosts);
   } catch (error) {
     console.log(error);
   }
