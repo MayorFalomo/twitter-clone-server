@@ -36,14 +36,12 @@ router.post("/register", async (req, res) => {
 });
 
 //Added retweeted Arrray to all the users at once
-// User.updateMany({},
-//   { $set: { retweeted: [] } }
-// )
+// User.updateMany({}, { $set: { reported: [] } })
 //   .then(() => {
-//     console.log("Retweeted array updated for all users successfully.");
+//     console.log("blocked array updated for all users successfully.");
 //   })
 //   .catch((err) => {
-//     console.log("Error updating retweeted array for users:", err);
+//     console.log("Error updating blocked array for users:", err);
 //   });
 
 //  async function getUserIdentifiers() {
@@ -147,7 +145,6 @@ router.get(`/get-user/:username`, async (req, res) => {
 
 //Follow a user
 router.put("/follow-user", async (req, res) => {
-  const userToBeFollowed = req.body.usersId;
   const currentUser = req.body.currentUserId;
 
   let userToAddTo;
@@ -168,15 +165,30 @@ router.put("/follow-user", async (req, res) => {
   };
   // console.log(userToAddToDetails, "userToAddToDetails");
   try {
-    userToAddTo = await User.findByIdAndUpdate(userToBeFollowed, {
-      $push: { followers: currentUserDetails },
-    });
+    userToAddTo = await User.findOneAndUpdate(
+      { username: userToAddToDetails.name },
+      {
+        $push: { followers: currentUserDetails },
+      }
+    );
+
+    await userToAddTo.save();
+
+    //! Another way of doing the above
+    // const foundUser = await User.findOne({ username: userToAddToDetails.name });
+    // const pushed = foundUser.followers?.push(currentUserDetails);
+
+    // await foundUser.save()
 
     existingUser = await User.findByIdAndUpdate(currentUser, {
       $push: { following: userToAddToDetails },
     });
+
+    await existingUser.save();
+
     // Create a notification message
     const notificationMessage = "followed you";
+
     // Create a notification object with the message and userDetails
     const notification = {
       message: notificationMessage,
@@ -188,6 +200,7 @@ router.put("/follow-user", async (req, res) => {
       { username: userToAddToDetails.name },
       { $push: { notifications: notification } }
     );
+    await user.save();
   } catch (err) {
     console.log(err);
   }
@@ -195,7 +208,7 @@ router.put("/follow-user", async (req, res) => {
   if (!userToAddTo && !existingUser) {
     return res.status(500).json({ message: "Unable to Follow this user" });
   }
-  return res.status(200).json({ message: "Successfully Followed" });
+  return res.status(200).json({ user, message: "Successfully Followed" });
 });
 
 //UnFolllow a User
@@ -208,15 +221,26 @@ router.put("/unfollow-user", async (req, res) => {
 
   try {
     //remove the current User from the person you followed
-    userToRemoveFrom = await User.findByIdAndUpdate(userToBeUnfollowed, {
-      $pull: { followers: { currentUserId: currentUser } },
-    });
+    userToRemoveFrom = await User.findOneAndUpdate(
+      { username: userToBeUnfollowed },
+      {
+        $pull: { followers: { currentUserName: currentUser } },
+      }
+    );
+
+    await userToRemoveFrom.save();
+
     //remove the user you followed from the existing user
-    existingUser = await User.findByIdAndUpdate(currentUser, {
-      $pull: {
-        following: { usersId: userToBeUnfollowed },
-      },
-    });
+    existingUser = await User.findOneAndUpdate(
+      { username: currentUser },
+      {
+        $pull: {
+          following: { name: userToBeUnfollowed },
+        },
+      }
+    );
+
+    await existingUser.save();
   } catch (error) {
     return res.status(500).json({ message: error });
   }
@@ -433,7 +457,6 @@ router.get("/:username/following-tweets", async (req, res) => {
   const username = req.params.username;
   let user;
   try {
-    // console.log(username, "this is params");
     user = await User.findOne({ username });
     if (!user) {
       return res.status(404).json("User not found");
@@ -442,6 +465,7 @@ router.get("/:username/following-tweets", async (req, res) => {
     const followingNames = user.following.map((following) => following.name);
 
     //Now i need to find through the post and retrieve the posts each person in the following array
+    // $In is a mongoDb array method that allows you break down an array into individual parts and you can then run a run something like a check for each part
     const followingPosts = await Post.find({
       username: { $in: followingNames },
     });
@@ -453,7 +477,124 @@ router.get("/:username/following-tweets", async (req, res) => {
   }
 });
 
-// }
-// countAllUsers();
+//Block a user route
+router.put("/:username/block", async (req, res) => {
+  //First i get the username of the user i want to block from the request params
+  const username = req.params.username;
+
+  //Then I also want a way to find the currentUser that is blocking somebody by getting the user _Id from the request body
+  const { _id } = req.body;
+  try {
+    //Next I check the User database for the User by using the username to find the user, It of course would return the exact user object
+    const user = await User.findOne({ username: username });
+
+    //Now If the user is not found in the database return this error
+    if (!user) {
+      return res.status(404).json("User not found");
+    }
+
+    //Before adding the user we found to the blocked array, first we check if the user has already been added to that array previously
+    const isBlocked = user.blocked?.some(
+      (blocked) => blocked.username === username
+    );
+
+    //If the user is found in isBlocked i.e if isBlocked is true then return this message
+    if (isBlocked) {
+      return res.status(400).json("You already blocked this user");
+    }
+
+    //Then i create the user object I want to add from the user object variable
+    const updatedCurrent = {
+      id: user._id,
+      username: user.username,
+      usersAt: user.usersAt,
+      usersId: user.usersId,
+      profilePic: user.profilePic,
+    };
+
+    //Now Mongo methods can take at least 1 parameter or more depending on the complexity of whatever you're doing, but here, I give it what to search as an object,
+    //Then the second param is also an object where you can use a $ method and then what you want it to do
+    //Lastly when using the findAndUpdate method from mongoDb, i'd advise you to add the {new: true}, Cos this ensures whatever you update would be returned immediately else you might have to refresh the database first
+    const currentUserUpdate = await User.findOneAndUpdate(
+      { _id: _id },
+      {
+        $push: {
+          blocked: updatedCurrent,
+        },
+      },
+      { new: true }
+    );
+
+    // Once it had found the currentUser , I push the person i want to block to the blocked array then I save it.
+    //The response here is a response of the currentUser after it has been saved
+    const response = await currentUserUpdate.save();
+
+    //I declare the variable here and assign it to the conditional statement
+    let allBlockedUsernames;
+
+    if (response) {
+      allBlockedUsernames = currentUserUpdate.blocked.map(
+        (user) => user.username
+      );
+    }
+
+    //The response from allBlockedUsernames is an array of all the usernames in the blocked array
+    //Lastly I'm basically saying, Check the Post model, inside the Post check the username and I use the Not in ($nin method) to separate things that are in that array from what i want
+    const tweets = await Post.find({ username: { $nin: allBlockedUsernames } });
+
+    return res.status(200).json({
+      tweets: tweets, //FilteredTweets response
+      response: response, //Updated currentUser response
+      message: "User blocked successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(400)
+      .json({ message: "An Error has occurred while trying to block user" });
+  }
+});
+
+//Unblock a User
+router.put("/:username/unblock", async (req, res) => {
+  try {
+    //Get the id of the user we want to unblock
+    const { username } = req.params;
+
+    //Get the id of the user who is unblocking
+    const { _id } = req.body;
+
+    //Find the currentUser wishing to unblock somebody
+    const currentUser = await User.findById(_id);
+
+    //Check if the user we want to unblock is in the blocked array of the currentUser
+    const isBlocked = currentUser.blocked.some(
+      (blocked) => blocked.username === username
+    );
+
+    //If the user is not in the blocked array then return this message
+    if (!isBlocked) {
+      return res.status(400).json("You haven't blocked this user");
+    }
+
+    //If the user that we want to block is in the blocked array then we want to filter out that user object by the username and whatever is left is assigned back to the currentUser blocked array
+    currentUser.blocked = currentUser.blocked.filter(
+      (blocked) => blocked.username !== username
+    );
+
+    //Save the updated current user
+    await currentUser.save();
+
+    return res.status(200).json({
+      currentUser: currentUser,
+      message: "User unblocked successfully",
+    });
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(400)
+      .json({ message: "An Error has occurred while trying to unblock user" });
+  }
+});
 
 module.exports = router;

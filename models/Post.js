@@ -2,6 +2,12 @@ const mongoose = require("mongoose");
 
 const TweetSchema = new mongoose.Schema(
   {
+    _id: {
+      type: mongoose.Schema.Types.ObjectId,
+      // default: mongoose.Types.ObjectId,
+      // type: String,
+      required: true,
+    },
     username: {
       type: String,
       required: true,
@@ -35,16 +41,16 @@ const TweetSchema = new mongoose.Schema(
       required: false,
       like: {
         type: Array,
-        required: true,
-        unique: true,
+        // required: true,
+        required: false,
       },
       retweet: {
         type: Array,
-        required: true,
+        required: false,
       },
       reply: {
         type: Array,
-        required: true,
+        required: false,
       },
     },
     retweet: {
@@ -59,11 +65,13 @@ const TweetSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
+    // userId: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "User",
+    //   required: false,
+
+    //   // required: true,
+    // },
     followingTweets: {
       type: Array,
       required: false,

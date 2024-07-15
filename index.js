@@ -6,6 +6,7 @@ const cors = require("cors");
 const userRoutes = require("./routes/users");
 const postRoutes = require("./routes/posts");
 const bookmarkRoutes = require("./routes/bookmarks");
+const tweetOptionsRoute = require("./routes/tweetsOptions");
 
 dotEnv.config({ path: "./vars/.env" });
 app.use(express.json());
@@ -24,8 +25,9 @@ mongoose
 app.use("/api/users", userRoutes);
 app.use("/api/tweets", postRoutes);
 app.use("/api/bookmarks", bookmarkRoutes);
+app.use("/api/tweet-options", tweetOptionsRoute);
 
 app.listen("7000", () => {
   console.log("Server is running on port 7000");
-  console.log(process.env.MONGO_URL);
+  // console.log(process.env.MONGO_URL);
 });
