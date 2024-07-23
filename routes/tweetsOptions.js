@@ -79,8 +79,7 @@ router.put("/:id/report-tweet", async (req, res) => {
   try {
     const currentUser = await User.findOne({ username });
     const tweet = await Post.findById(id);
-    // console.log(tweet, "tweet");
-    // console.log(currentUser, "currentUser");
+
     currentUser.reported.push({ id: tweet._id });
     await currentUser.save();
     return res.status(200).json("Tweet reported");

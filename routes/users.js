@@ -597,4 +597,22 @@ router.put("/:username/unblock", async (req, res) => {
   }
 });
 
+// Search for users by their username
+router.get("/search/suggested-users", async (req, res) => {
+  const { usersAt } = req.query;
+  try {
+    const users = await User.find({
+      usersAt: { $regex: new RegExp(usersAt, "i") },
+    });
+
+    // const mapped = users.map((res) => res);
+
+    // console.log(users, "users");
+
+    return res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 module.exports = router;
