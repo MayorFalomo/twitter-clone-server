@@ -6,9 +6,49 @@ const User = require("../models/Users");
 router.post("/", async (req, res) => {
   const newPost = new Post(req.body);
   try {
-    const savedPost = await newPost.save();
-    res.status(200).json(savedPost);
+    // const savedPost = await newPost.save();
+
+    // Get the tweet in req.body
+    const mappedOverTweet = newPost.tweet.split(" ");
+    const mentions = mappedOverTweet.filter((val) => val.startsWith("@"));
+
+    for (const mention of mentions) {
+      const username = mention.slice(1); // Remove "@" to get the username
+
+      const user = await User.findOne({ username: username });
+
+      if (!user) {
+        console.log(`User ${username} not found`);
+        continue; // Skip to the next mention instead of returning
+      }
+
+      // Create a notification message
+      const notificationMessage = `has mentioned you in a tweet`;
+
+      // Create a notification object with the message and userDetails
+      const notification = {
+        message: notificationMessage,
+        tweets: newPost.tweet,
+        tweetId: newPost._id,
+        userWhoTagged: newPost.username,
+        userWhoTaggedAt: newPost.usersAt,
+        userWhoTaggedProfilePic: newPost.profileDp,
+      };
+
+      // Find the user whose post was tagged and push the notification object into their notifications array
+      await User.findOneAndUpdate(
+        { username: username }, // Corrected to use username
+        { $push: { notifications: notification } },
+        { new: true } // Optional: Return the updated document
+      );
+    }
+
+    // Save the new post
+    await newPost.save();
+
+    res.status(200).json(newPost);
   } catch (err) {
+    console.error(err); // Log the error for debugging
     res.status(500).json(err);
   }
 });
@@ -28,44 +68,6 @@ router.get("/search", async (req, res) => {
       .json({ error: "An error occurred while searching for tweets." });
   }
 });
-
-// router.post("/", async (req, res) => {
-//   try {
-//     const { userId, username, profileDp, tweet, usersAt, video, picture, likes, retweet, followers, } = req.body;
-//     // const id = req.body.id
-//     const id = req.body.usersId
-//     // Find the user by their _id
-//     const user = await User.findOne({ id });
-//     console.log(user);
-//     if (!user) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
-
-//     // Create a new post and associate it with the user
-//     const newPost = new Post({
-//       userId: req.body.userId,
-//       username: req.body.username,
-//       profileDp: req.body.profileDp ,
-//       tweet: req.body.tweet,
-//       usersAt: req.body.usersAt ,
-//       video: req.body.video ,
-//       picture: req.body.picture,
-//       likes: req.body.likes,
-//       retweet: req.body.retweet,
-//       followers: req.body.followers,
-//       newId: req.body.newId,
-//     });
-
-//     // Save the new post
-//     const savedPost = await newPost.save();
-
-//     // Return the saved post in the response
-//     res.status(200).json(savedPost);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: "Error creating post" });
-//   }
-// });
 
 // Post.updateMany({},
 //   { $set: {profileDp: "" } }

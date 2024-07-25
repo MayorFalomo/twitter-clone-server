@@ -11,6 +11,7 @@ router.post("/addBookmark", async (req, res, next) => {
       return res.status(404).json({ message: "Couldn't add Bookmark" });
     }
 
+    console.log(bookmarking, "bookmarking");
     await bookmarking.save();
 
     return res
@@ -42,15 +43,17 @@ router.delete("/delete-bookmark/:id", async (req, res, next) => {
   let bookmark;
 
   try {
-    console.log(bookmarkId, "bookmarkId");
+    // console.log(bookmarkId, "bookmarkId");
     bookmark = await Bookmarks.findOneAndRemove({ postId: bookmarkId });
+
+    if (!bookmark) {
+      return res.status(404).json({ message: "Can't delete this Bookmark" });
+    }
+
     await bookmark.save();
-    console.log(bookmark, "bookmark first");
+    // console.log(bookmark, "bookmark first");
   } catch (err) {
-    console.log(err);
-  }
-  if (!bookmark) {
-    return res.status(404).json({ message: "Can't delete this Bookmark" });
+    console.log(err, "An Error has occurred while bookmarking");
   }
   return res
     .status(200)
