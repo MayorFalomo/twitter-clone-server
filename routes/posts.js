@@ -841,6 +841,32 @@ router.get("/:username/following-tweets", async (req, res) => {
   }
 });
 
+router.delete('/delete-tweet/:username', async (req, res) => {
+    const username = req.params.username;
+
+    try {
+        // Delete tweets matching the username
+        const deletedPosts = await Post.deleteMany({ username });
+
+        // Check if any posts were deleted
+        if (deletedPosts.deletedCount > 0) {
+            return res.status(200).json({
+                message: `${deletedPosts.deletedCount} tweet(s) deleted successfully.`,
+            });
+        } else {
+            return res.status(404).json({
+                message: 'No tweets found for this user.',
+            });
+        }
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({
+            message: 'An error occurred while deleting tweets.',
+            error: err.message,
+        });
+    }
+});
+
 // Update all documents to include the new field
 // Post.updateMany({}, { $set: { followingTweets: [] } })
 //   .then((result) => {
